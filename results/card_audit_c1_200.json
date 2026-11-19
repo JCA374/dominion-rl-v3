@@ -1,0 +1,333 @@
+{
+ "t": "2026-11-19 10:47",
+ "net": "runs/c1/net_200.npy",
+ "name": "c1_200",
+ "secs": 11,
+ "games": 2080,
+ "cards": {
+  "Artisan": {
+   "games": 80,
+   "win": 0.83125,
+   "bought_in": 0.475,
+   "copies_bought": 0.8625,
+   "plays_per_game": 2.675,
+   "asks_answered": {
+    "Artisan gain": true,
+    "Artisan topdeck": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Bandit": {
+   "games": 80,
+   "win": 0.84375,
+   "bought_in": 0.475,
+   "copies_bought": 0.5375,
+   "plays_per_game": 1.9625,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Bandit trash": true
+   },
+   "errors": 0,
+   "capped": 0
+  },
+  "Bureaucrat": {
+   "games": 80,
+   "win": 0.81875,
+   "bought_in": 0.3,
+   "copies_bought": 0.4875,
+   "plays_per_game": 1.4625,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Bureaucrat topdeck": false
+   },
+   "errors": 0,
+   "capped": 0
+  },
+  "Cellar": {
+   "games": 80,
+   "win": 0.73125,
+   "bought_in": 0.425,
+   "copies_bought": 0.6875,
+   "plays_per_game": 1.6875,
+   "asks_answered": {
+    "Cellar discard": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Chapel": {
+   "games": 80,
+   "win": 0.85,
+   "bought_in": 0.05,
+   "copies_bought": 0.0625,
+   "plays_per_game": 0.0,
+   "asks_answered": {
+    "Chapel trash": false
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Council Room": {
+   "games": 80,
+   "win": 0.8,
+   "bought_in": 0.1125,
+   "copies_bought": 0.1625,
+   "plays_per_game": 0.1375,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Festival": {
+   "games": 80,
+   "win": 0.7875,
+   "bought_in": 0.425,
+   "copies_bought": 0.9375,
+   "plays_per_game": 3.9,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Gardens": {
+   "games": 80,
+   "win": 0.8125,
+   "bought_in": 0.875,
+   "copies_bought": 3.95,
+   "plays_per_game": 0.0,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Harbinger": {
+   "games": 80,
+   "win": 0.79375,
+   "bought_in": 0.3,
+   "copies_bought": 0.8625,
+   "plays_per_game": 3.1375,
+   "asks_answered": {
+    "Harbinger topdeck": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Laboratory": {
+   "games": 80,
+   "win": 0.78125,
+   "bought_in": 0.6,
+   "copies_bought": 1.725,
+   "plays_per_game": 9.65,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Library": {
+   "games": 80,
+   "win": 0.79375,
+   "bought_in": 0.025,
+   "copies_bought": 0.025,
+   "plays_per_game": 0.075,
+   "asks_answered": {
+    "Library skip": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Market": {
+   "games": 80,
+   "win": 0.84375,
+   "bought_in": 0.6,
+   "copies_bought": 2.05,
+   "plays_per_game": 8.0125,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Merchant": {
+   "games": 80,
+   "win": 0.76875,
+   "bought_in": 0.1375,
+   "copies_bought": 0.2875,
+   "plays_per_game": 2.3625,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Militia": {
+   "games": 80,
+   "win": 0.81875,
+   "bought_in": 0.825,
+   "copies_bought": 1.3875,
+   "plays_per_game": 7.5,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Militia discard": true
+   },
+   "errors": 0,
+   "capped": 0
+  },
+  "Mine": {
+   "games": 80,
+   "win": 0.79375,
+   "bought_in": 0.025,
+   "copies_bought": 0.0625,
+   "plays_per_game": 0.05,
+   "asks_answered": {
+    "Mine trash": true,
+    "Mine gain": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Moat": {
+   "games": 80,
+   "win": 0.71875,
+   "bought_in": 0.3625,
+   "copies_bought": 0.5625,
+   "plays_per_game": 1.1125,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Moneylender": {
+   "games": 80,
+   "win": 0.8375,
+   "bought_in": 0.05,
+   "copies_bought": 0.05,
+   "plays_per_game": 0.0625,
+   "asks_answered": {
+    "Moneylender trash": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Poacher": {
+   "games": 80,
+   "win": 0.75,
+   "bought_in": 0.5875,
+   "copies_bought": 1.375,
+   "plays_per_game": 7.05,
+   "asks_answered": {
+    "Poacher discard": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Remodel": {
+   "games": 80,
+   "win": 0.75,
+   "bought_in": 0.2375,
+   "copies_bought": 0.3125,
+   "plays_per_game": 0.2875,
+   "asks_answered": {
+    "Remodel trash": true,
+    "Remodel gain": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Sentry": {
+   "games": 80,
+   "win": 0.86875,
+   "bought_in": 0.9125,
+   "copies_bought": 2.825,
+   "plays_per_game": 19.575,
+   "asks_answered": {
+    "Sentry card": true,
+    "Sentry top": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Smithy": {
+   "games": 80,
+   "win": 0.80625,
+   "bought_in": 0.1875,
+   "copies_bought": 0.2125,
+   "plays_per_game": 0.75,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Throne Room": {
+   "games": 80,
+   "win": 0.925,
+   "bought_in": 0.2875,
+   "copies_bought": 0.5625,
+   "plays_per_game": 2.55,
+   "asks_answered": {
+    "Throne Room": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Vassal": {
+   "games": 80,
+   "win": 0.775,
+   "bought_in": 0.3875,
+   "copies_bought": 1.2375,
+   "plays_per_game": 5.6375,
+   "asks_answered": {
+    "Vassal play": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Village": {
+   "games": 80,
+   "win": 0.83125,
+   "bought_in": 0.0875,
+   "copies_bought": 0.1125,
+   "plays_per_game": 0.75,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Witch": {
+   "games": 80,
+   "win": 0.8375,
+   "bought_in": 0.7375,
+   "copies_bought": 1.15,
+   "plays_per_game": 5.525,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  },
+  "Workshop": {
+   "games": 80,
+   "win": 0.76875,
+   "bought_in": 0.15,
+   "copies_bought": 0.2875,
+   "plays_per_game": 0.6125,
+   "asks_answered": {
+    "Workshop gain": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0
+  }
+ },
+ "problems": [],
+ "note": "kingdom = the card + 9 random others; opponent the GA base genome; both seats"
+}

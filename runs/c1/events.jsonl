@@ -12,3 +12,4 @@
 {"t": "2026-11-19T09:16:53", "kind": "goal_best", "iter": 46, "check": {"score": 0.8575, "n": 400}, "champion": "runs/c1/net_46.npy", "eval": "GA 0.858 champ 0.465 BM 0.950 Smithy 0.870 Witch 0.775 bots 0.865"}
 {"t": "2026-11-19T09:34:49", "kind": "stage_pass", "stage": "champion", "index": 1, "iter": 78, "why": "eval champion 0.583 >= 0.56", "champion": "runs/c1/net_78.npy", "eval": "GA 0.815 champ 0.583 BM 0.905 Smithy 0.875 Witch 0.750 bots 0.843"}
 {"t": "2026-11-19T09:34:49", "kind": "stage_start", "stage": "open league", "index": 2, "iter": 79, "expect": "Every earlier model, so beating the champion does not cost strength elsewhere."}
+{"t": "2026-11-19T10:44:30", "kind": "goal_best", "iter": 199, "check": {"score": 0.8588, "n": 400}, "champion": "runs/c1/net_199.npy", "eval": "GA 0.859 champ 0.530 BM 0.930 Smithy 0.840 Witch 0.760 bots 0.843"}
