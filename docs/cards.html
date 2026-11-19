@@ -23,8 +23,12 @@ covers it. <b>83 engine tests pass.</b></p>
 
 <h2>The model</h2>
 <p class="muted small">For each card: games against the GA genome on kingdoms with that card plus 9 random others (40 kingdoms × 2 seats).
-<b>Takes it</b>: the share of games in which it bought at least one. <b>Plays</b>: plays per game. <b>Questions</b>: the decisions
-this card asks, and whether the model answered each at least once. <b>Errors</b>: illegal answers, which must be 0.</p>
+<b>Its own choices</b>: it buys what it wants. <b>Takes it</b>: the share of games in which it bought at least one. <b>Plays</b>:
+plays per game. <b>Questions</b>: the decisions this card asks and whether they came up. "Not asked (never played)" means the
+model never bought the card, so the question could not come up. That is a choice, not a bug.
+<b>With 2 forced copies</b>: the same games, but its first buys are forced to two copies. This shows whether it <i>can</i> play
+the card, and what it answers (for Chapel: which cards it trashes and how often it stops). <b>Errors</b>: illegal answers,
+which must be 0.</p>
 <div id="pick" class="picker"></div>
 <div id="audit"></div>
 <h3>What we found, and the card school</h3>
@@ -32,8 +36,14 @@ this card asks, and whether the model answered each at least once. <b>Errors</b>
 Moneylender, Council Room, Smithy, Village and Merchant. A network cannot learn to play a card it never owns, so it cannot find out
 whether buying the card would pay. rl-v3's curriculum therefore has a <b>card school</b>. In 15% of the training games the learner's
 first buys are forced to two copies of one of these cards. Those forced buys are not trained on: it learns to <i>play</i> the cards
-from real games, and whether to <i>buy</i> them stays its own decision. Given a forced Chapel or Mine, the champion already plays it
-4.5 and 6.6 times per game.</p>
+from real games, and whether to <i>buy</i> them stays its own decision.</p>
+<p><b>Can it trash?</b> Yes. The 0% for Chapel is "never bought", not "cannot". With two forced Chapels, rl-v1's champion plays
+Chapel about 4 times a game, but cautiously: it mostly stops after trashing one Copper, and sometimes trashes a Gold. After 300
+iterations with the card school, rl-v3 trashes Estates 14 times as often, has stopped trashing Gold, and still often trashes the
+Chapel itself. Mine works for both: Copper into Silver, Silver into Gold.</p>
+<p><b>Why "bought, never played" is not a bug either.</b> When rl-v3 buys Chapel or Mine on its own (in about 2–5% of games), it
+is almost always in the last one to three turns of the game, with a spare buy. The game ends before the card is drawn. In the few
+games where it buys one early, it plays it (3–5 times a game).</p>
 </main>
 <script src="site.js?v=c9acbbb6"></script>
 <script src="common.js?v=958183f8"></script>
