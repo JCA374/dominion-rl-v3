@@ -1,0 +1,22 @@
+{
+ "t": "2026-11-19 09:33:09",
+ "label": "c1 iteration 75",
+ "note": "",
+ "policy": "runs/c1/net_75.npy",
+ "n": 1000,
+ "score": 0.8265,
+ "ci": [
+  0.8018,
+  0.8487
+ ],
+ "big_money": 0.9325,
+ "smithy_bm": 0.835,
+ "witch_bm": 0.78,
+ "secs": 5,
+ "vs_rl": 0.51,
+ "vs_rl_ci": [
+  0.479,
+  0.5409
+ ],
+ "vs_rl_n": 1000
+}
