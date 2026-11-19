@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.so
+*.so.*
+runs/
+logs/
+publish_loop.pid
+voice/*/audio/
+voice/*/*.wav
+podcast/publish_*.log

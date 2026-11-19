@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<header class="hero">
+  <h1>Chains of action cards, and the best Dominion model yet</h1>
+  <p class="lede">The fifth method of the Dominion project started from one question: <b>can a network learn to play
+its action cards in the right order</b> (Village before Smithy, Festival before the draw, what to Throne), or does it need a
+statistical model that calculates chains? We measured it and got a clear answer (see <a href="chains.html">Chains</a>).
+That answer decided the rest: rl-v3 takes the strongest network so far, rl-v1's champion, and goes on training it with new
+inputs, a curriculum aimed at beating that same champion, and a <b>card school</b> for the cards it never tried
+(<a href="cards.html">Cards</a>). <b>Goal:</b> at least 55% head to head against rl-v1's champion, measured on 1,000 fresh
+games, while staying at or above its 82.8% against the GA genome.</p>
+  <p class="countdown" id="countdown"></p>
+</header>
+
+<section>
+  <h2>Status now</h2>
+  <div class="cards" id="cards"></div>
+  <p class="muted small">Numbers come from the run files and update every 15 minutes. Details on the <a href="training.html">Training</a> tab; the stages on <a href="curriculum.html">Curriculum</a>.</p>
+</section>
+
+<section>
+  <h2>What it plays right now</h2>
+  <div id="favorites"></div>
+  <h3>How it uses its turns: +Actions, +Cards, +Buys</h3>
+  <div id="turnuse"></div>
+</section>
+
+<section>
+  <h2>What this is</h2>
+<p>Dominion is a deck-building card game. Every turn you play action cards from your hand, then buy cards for your deck.
+The player with the most victory points when the game ends wins. Inside one turn the order matters. Take a hand of
+<i>Festival, Festival, Smithy, Merchant</i> and four victory cards, with one action left. Play Smithy first and the two
+Festivals are dead: on average you buy with $1. Play Festival first and you keep the actions to play everything: on average
+you buy with $23 (a real position from the exam).</p>
+<p><b>The question, answered.</b> We built a <b>turn planner</b>: for an action decision it plays every option on many shuffles
+of the unseen cards, to the end of the turn, and picks the best. On 14,243 positions from engine kingdoms, rl-v1's champion
+network picks the coin-best card <b>91.6%</b> of the time and loses about <b>$0.09</b> per decision. It is weakest with Throne
+Room in hand (76%). Then the test that matters: <b>with the planner (or a hand-written chain rule) choosing its actions, the
+network did not win more games</b> against itself without it (48–50%, over 800–2,000 games per test). The network
+learns chains well enough, and the mistakes that remain do not decide games. So rl-v3 has <b>no chain module</b>: the
+network plays alone, about 3 ms per game.</p>
+<p><b>What rl-v3 changes instead.</b> (1) It starts from rl-v1's last checkpoint, which was still improving when it was stopped
+(67% → 81% against the GA genome over 2,200 iterations). (2) It reads 115 extra <b>helper inputs</b> from rl-v2: the exact
+odds of what the next hand brings, and what one more copy of each card would change. They start at zero weight, so it
+begins by playing exactly like rl-v1. (3) A <b>curriculum</b> that ends with a quarter of its games against the frozen
+champion. (4) The <b>card school</b>: the card audit found the champion never buys Chapel and rarely buys Mine, Library,
+Moneylender, Council Room, Smithy, Village or Merchant, so in 15% of the games its first buys are forced to one of those.
+It learns to play them, and it decides for itself whether to buy them.</p>
+<p><b>What came before.</b> <a href="https://github.com/JCA374/dominion-v1">dominion-v1</a> (an evolved priority-list
+genome, "GA"), <a href="https://jca374.github.io/dominion-az-v1/">az-v1</a> (AlphaZero-style search over buys, 70% against
+the GA), <a href="https://jca374.github.io/dominion-rl-v1/">rl-v1</a> (one network for every decision: imitation of the GA,
+then PPO; its champion scores 82.8% against the GA and 71.7% against az-v1) and
+<a href="https://jca374.github.io/dominion-rl-v2/">rl-v2</a> (the same network from random weights, by self-play: ~74%).</p>
+</section>
+
+<section>
+  <h2>Approach</h2>
+<pre class="diagram">
+ rl-v1 r2 checkpoint (iteration 2,219: weights + Adam state)
+        │  + 115 helper inputs at zero weight (plays exactly as before)
+        ▼
+ ┌────────────────────────────────────────────┐   choices, probabilities,
+ │ 3,000 games per iteration, the net SAMPLING  │   win estimates, results
+ │ 1 home league: GA, bots, az-v1, past selves  │ ──────────────────────────┐
+ │ 2 champion:   + rl-v1's champion 25%         │                           ▼
+ │ 3 open league: + rl-v2, everything earlier   │      advantages (GAE) ─▶ PPO update
+ │ card school (stages 2-3): 15% of games start │                           │
+ │   with 2 forced copies of an untried card    │                           │
+ └────────────────────────────────────────────┘                           │
+        ▲                                                                  │
+        └──────────────────────────── new net ◀────────────────────────────┘
+   after every update: 400 games vs GA + 300 vs bots + 200 vs the champion (measured only)
+   every 25 updates: goal check, 1,000 fresh games vs GA + 1,000 head to head vs the champion
+   every 100: chain exam + card audit of the newest net
+</pre>
+<p><b>Real numbers</b> (8-thread laptop CPU, no GPU): 180,771 weights (413 inputs → 256 → 256 → 34 choices + a win
+estimate), running in C inside the engine. One iteration (3,000 games + PPO update + 900 evaluation games) takes about 40 s.
+The turn planner costs ~75 µs per rollout, about 60 ms per game with 32 shuffles. It is cheap enough, but it brought no
+gain.</p>
+</section>
+
+<section>
+  <h2>Decisions <span class="muted small">newest first · why things are the way they are</span></h2>
+  <p class="muted small">Logged with <code>python experiments/journal.py --decision "title" "what was chosen and why" "what was rejected"</code>.</p>
+  <div id="decisions"></div>
+</section>
+
+<section>
+  <h2>How to read this site</h2>
+  <div id="guide"></div>
+</section>
+
+<section>
+  <h2>Repo layout</h2>
+<pre class="diagram">
+train.py          the stages (STAGES, SCHOOL), PPO from rl-v1's checkpoint, the evaluation; writes runs/&lt;run&gt;/
+c/rl.c            the agent in C: 413 inputs of any decision, the net's forward pass, the turn planner (rl_plan),
+                  the chain rule experiment, the card school's forced buys, recording
+rl/               Python: core.py (ctypes bridge), net.py (PyTorch model + export to C), jobs.py (game jobs, GAE)
+experiments/      chain_exam.py, plan_vs.py, card_audit.py, goal_check.py, confirm.py, turn_usage.py, journal.py
+opponents/        rl-v1's checkpoint and champion, rl-v2's net, az-v1's best net
+data/             the chain exam's positions (data/chain_exam.npz)
+results/          every measured number (chain_exam, plan_tests, card_audit_*, goal_*)
+play/             the net's features + forward pass in numpy, for playing against it in the browser (Pyodide)
+engine/           submodule: the rules (dominion-engine), incl. de_resume_action for the planner
+az-v1/            submodule: az-v1 (its agent, and through it dominion-v1's GA genomes and bots)
+publish.py, site_hooks.py, site.json, docs/    this site
+</pre>
+</section>
+</main>
+<footer>Updated automatically every 15 minutes. Numbers are measured on fresh games, not estimated.</footer>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="overview.js?v=cb92b7c0"></script>
+<script src="favorites.js?v=a2adf90b"></script>
+</body>
+</html>

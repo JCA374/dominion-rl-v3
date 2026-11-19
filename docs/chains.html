@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chains</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Chains: does the network play its action cards in the right order?</h1>
+<p class="lede">The question rl-v3 started from: a turn in Dominion is a chain of action cards. Village gives two more actions,
+Smithy draws three cards, Festival gives two actions and two coins, and Throne Room plays the next card twice. Played in the wrong
+order, a hand that could make $12 makes $3. Can one network, which answers one card at a time, learn this, or does it need a
+model that calculates chains?</p>
+
+<h2>The short answer</h2>
+<div id="answer" class="cards"></div>
+<p>We measured it two ways. First an <b>exam</b>: on 14,243 real positions from engine kingdoms, how often does the network pick
+the card that gives the most money this turn? Then the real test: <b>does fixing its mistakes win games?</b> We put a
+<b>turn planner</b> next to the network. The planner is a small statistical model: it tries every option on many shuffles of the
+unseen cards and plays each one out to the end of the turn. Then we played it against the same network without the planner.</p>
+<p><b>Result:</b> the network makes some ordering mistakes (Throne Room is its weakest spot), but correcting them with the planner
+or with a hand-written chain rule <b>did not win more games</b>. The mistakes are rare in the decks it actually builds and cheap
+when they happen. So rl-v3 has no chain module. The effort went into training instead: more games, new inputs, a curriculum
+against the champion, and a card school for the cards it never tried.</p>
+
+<h2>The exam</h2>
+<p class="muted small">Positions: action decisions with at least two options, taken from 600 games on engine kingdoms (2–3
+villages or cantrips plus 2–3 draw cards or Throne Room). Half the games were played by the GA genome, half by rl-v1's champion,
+both against the GA genome. <b>Judge</b>: the turn planner with 128 shuffles of the unseen cards. Each option is played out to the
+end of the turn by the champion net and scored by the coins at the first buy (+$1 per extra Buy). A choice counts as right when it
+comes within $0.05 of the best. <b>Regret</b>: the dollars lost per decision against the best option.</p>
+<div id="exam"></div>
+<h3>Where it goes wrong</h3>
+<p class="muted small">The champion's costliest misses on the exam: the hand, the number of actions left, what it played, what the
+planner would have played, and the expected coins of every option.</p>
+<div id="misses"></div>
+
+<h2>Does fixing it win games?</h2>
+<p class="muted small">Head to head: the net with the planner (or the rule) against the same net without it, in both seats, with
+the same kingdoms and seeds. 50% means no difference. ± is one standard error.</p>
+<div id="tests"></div>
+<p>Why the coins planner does not help: it sees one turn only. It never plays Chapel or Remodel, because trashing costs money
+this turn, and it ignores what a card does to the next shuffle. The planner that judges by the network's own win estimate after
+the turn has the opposite problem: that estimate is too noisy to tell two orderings apart. Search over the action phase therefore
+joins search over buys (az-v1) on the list of things that did not beat the plain network.</p>
+<p class="muted">Code: <code>c/rl.c</code> (<code>rl_plan</code>, <code>rl_chain_rule</code>),
+<code>experiments/chain_exam.py</code>, <code>experiments/plan_vs.py</code>; the engine's <code>de_resume_action</code> continues
+a copied game from inside the action phase.</p>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="chains.js?v=979fd54d"></script>
+</body>
+</html>

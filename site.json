@@ -1,0 +1,215 @@
+{
+ "title": "Dominion rl-v3: Chain",
+ "icon": "\u26d3\ufe0f",
+ "repo": "JCA374/dominion-rl-v3",
+ "goal": {
+  "metric": "vs_rl",
+  "target": 0.55,
+  "label": "Head to head vs rl-v1's champion",
+  "columns": [
+   [
+    "score",
+    "vs GA base"
+   ],
+   [
+    "vs_az",
+    "vs az-v1 best"
+   ],
+   [
+    "big_money",
+    "vs Big Money"
+   ],
+   [
+    "smithy_bm",
+    "vs Smithy-BM"
+   ],
+   [
+    "witch_bm",
+    "vs Witch-BM"
+   ]
+  ]
+ },
+ "goal_text": "the best Dominion model yet: at least 55% head to head against rl-v1's champion (net 2,200), without dropping below its 82.8% against the GA base",
+ "names": {},
+ "chart": {
+  "x": "iter",
+  "x_scale": 1,
+  "x_label": "PPO iteration (3,000 games each)",
+  "y_label": "score %",
+  "series": [
+   {
+    "key": "eval_champion",
+    "label": "vs rl-v1's champion (200 eval games, head to head)",
+    "style": "both",
+    "color": "--accent"
+   },
+   {
+    "key": "eval_GA_base",
+    "label": "vs GA base (400 eval games)",
+    "style": "both",
+    "color": "--good"
+   },
+   {
+    "key": "eval_bots",
+    "label": "vs the 3 bots (300 eval games)",
+    "style": "points",
+    "color": "--bad"
+   }
+  ]
+ },
+ "charts": [
+  {
+   "title": "Stage",
+   "percent": false,
+   "series": [
+    {
+     "key": "stage",
+     "label": "1 home league \u00b7 2 champion \u00b7 3 open league"
+    }
+   ]
+  },
+  {
+   "title": "Training games against the league",
+   "y_label": "score %",
+   "percent": true,
+   "series": [
+    {
+     "key": "selfplay_vs_champion",
+     "label": "vs champion"
+    },
+    {
+     "key": "selfplay_vs_ga",
+     "label": "vs GA"
+    },
+    {
+     "key": "selfplay_vs_bots",
+     "label": "vs bots"
+    },
+    {
+     "key": "selfplay_vs_aznet",
+     "label": "vs az-v1 net"
+    },
+    {
+     "key": "selfplay_vs_rlv2",
+     "label": "vs rl-v2"
+    },
+    {
+     "key": "school_points",
+     "label": "card school games"
+    }
+   ]
+  },
+  {
+   "title": "Policy entropy",
+   "percent": false,
+   "series": [
+    {
+     "key": "entropy",
+     "label": "mean entropy of its choices"
+    }
+   ]
+  },
+  {
+   "title": "Win estimate error",
+   "percent": false,
+   "series": [
+    {
+     "key": "value_mse_fresh",
+     "label": "value vs final result on fresh games (1.0 = no idea)"
+    }
+   ]
+  },
+  {
+   "title": "Each bot separately",
+   "y_label": "score %",
+   "percent": true,
+   "series": [
+    {
+     "key": "eval_Big_Money",
+     "label": "Big Money"
+    },
+    {
+     "key": "eval_Smithy_BM",
+     "label": "Smithy-BM"
+    },
+    {
+     "key": "eval_Witch_BM",
+     "label": "Witch-BM"
+    }
+   ]
+  },
+  {
+   "title": "PPO step size",
+   "percent": false,
+   "series": [
+    {
+     "key": "kl",
+     "label": "approximate KL per update"
+    },
+    {
+     "key": "clipfrac",
+     "label": "share of clipped ratios"
+    }
+   ]
+  },
+  {
+   "title": "Iteration time",
+   "percent": false,
+   "y_label": "seconds",
+   "series": [
+    {
+     "key": "t_play",
+     "label": "play"
+    },
+    {
+     "key": "t_train",
+     "label": "PPO update"
+    },
+    {
+     "key": "t_iter",
+     "label": "whole iteration"
+    }
+   ]
+  }
+ ],
+ "cards": [
+  {
+   "label": "Iteration",
+   "key": "iter",
+   "sub": "3,000 games each"
+  },
+  {
+   "label": "Stage",
+   "key": "stage",
+   "sub": "1 home \u00b7 2 champion \u00b7 3 open"
+  },
+  {
+   "label": "vs champion",
+   "key": "eval_champion",
+   "fmt": "pct",
+   "sub": "200 eval games, \u00b17%"
+  },
+  {
+   "label": "vs GA base",
+   "key": "eval_GA_base",
+   "fmt": "pct",
+   "sub": "400 eval games, \u00b15%"
+  },
+  {
+   "label": "vs bots",
+   "key": "eval_bots",
+   "fmt": "pct",
+   "sub": "300 eval games"
+  }
+ ],
+ "stale_minutes": 60,
+ "alive_pattern": "^.venv/bin/python -u train.py --run {run}( |$)",
+ "replay_kinds": [],
+ "push_globs": [
+  "runs/*/stats.csv",
+  "runs/*/events.jsonl",
+  "runs/*/config.json",
+  "runs/*/curriculum.json"
+ ],
+ "main_run": "c1"
+}

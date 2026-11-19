@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lessons</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Lessons</h1>
+<p class="lede">What this project and earlier ones taught. Newest first.</p>
+<div class="box"><h3>From this project</h3><ul id="new">
+  <li><b>A visible mistake is not a costly one.</b> rl-v1's champion picks the coin-best action only 91.6% of the time on the
+    chain exam (76% with Throne Room in hand). Yet a planner that fixes those choices, and a rule that fixes the clearest
+    kind, both scored 48–50% head to head against the plain network. Measure the fix in whole games before building it into
+    the player.</li>
+  <li><b>A judge must see the whole consequence.</b> Judged by coins this turn, the planner never plays Chapel or Remodel,
+    because trashing costs money now. Judged by the network's win estimate after the turn, it is too noisy to separate two
+    orderings: it once preferred Militia before Laboratory, which can never be better. Both judges failed in opposite ways.</li>
+  <li><b>Where you cannot see the mistakes, look at the decks.</b> The card audit found what the win rates hid: the champion
+    had never bought Chapel, so it could not learn whether Chapel pays. No error count shows that; only "never asked" does.</li>
+  <li><b>An unknown card is not a weak card.</b> Given two forced Mines, the champion plays Mine 6.6 times per game without
+    having been taught: the network generalises across cards. What it lacked was the experience of owning one.</li>
+  <li><b>Check the timing of a gate.</b> Stage 1's gate (84% against the GA genome on 400 evaluation games, ±4%) passed at
+    iteration 20 on one lucky evaluation. A gate on one noisy number moves the curriculum early; a gate on a moving
+    average would not.</li>
+  <li><b>Test every card in whole games, both engines.</b> Six cards had no hand-made rule test. A per-card whole-game test
+    (bought, played, every question asked, identical in Python and C) now covers all 26.</li>
+</ul></div>
+<div class="box"><h3>From rl-v2</h3><ul>
+  <li><b>Give the network the arithmetic.</b> 115 helper inputs (exact next-hand odds, what one more copy would change) lifted
+    a run that had been flat for 400 iterations from 71% to 74% against the GA genome. rl-v3 starts with them.</li>
+  <li><b>Self-play from zero finds a style early and keeps it</b>: money plus attacks, 0.5 actions per turn, while rl-v1 grew
+    into an engine player (1.6). A teacher's start is a head start here, not a ceiling.</li>
+  <li><b>Add inputs without starting over</b>: zero weights and zero optimiser state leave play unchanged.</li>
+</ul></div>
+<div class="box"><h3>From rl-v1 (this project's parent)</h3><ul>
+  <li><b>You can only beat what you practise against.</b> rl-v1 tied az-v1 head to head until az-v1 joined its league;
+    then it won 55%, and after 2,200 iterations 72%. Here rl-v1's champion joins in stage 2.</li>
+  <li><b>Speed is a feature.</b> 3 ms per game inside the C engine, against 460 ms for az-v1's search: millions of
+    practice games on a laptop.</li>
+  <li><b>Confirm once, on games never used, with the rival on the same games.</b> This project has its own never-used
+    confirmation set (<code>experiments/confirm.py</code>, a new seed), for the end.</li>
+</ul></div>
+<div class="box"><h3>From az-v1</h3><ul>
+  <li><b>Search over buys saturates</b> at about 70% against the GA genome. rl-v3 adds that search over the action phase does
+    not help either: on this laptop the plain network, trained long, is the strongest method.</li>
+</ul></div>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+
+</body>
+</html>

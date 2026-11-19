@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The model</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>The model</h1>
+<p class="lede">rl-v1's network, trained on: one small network answers every decision of the game, and since rl-v3 it
+also reads rl-v2's helper inputs. There is no search and no chain module. The planner we built to calculate chains is a
+measuring instrument, not part of the player (see <a href="chains.html">Chains</a>).</p>
+<section>
+<h2>The network</h2>
+<pre class="diagram">
+ 413 inputs = 298 (what I know + the question) + 115 helper inputs (exact odds)
+   │  dense 413 → 256, ReLU
+   │  dense 256 → 256, ReLU
+   ├──▶ 34 logits: a card id (or a Sentry option) or PASS; illegal answers masked out → softmax → a choice
+   └──▶ 1 number: tanh → my win estimate in [−1, +1]
+ 180,771 weights; one forward pass ≈ 25 µs in C; a whole game ≈ 3 ms
+</pre>
+<p>A chain of actions is a series of single decisions. "Which action now?" is asked again after every card, and each time
+the inputs show the new hand, the cards already in play and the actions left. To play Festival before Smithy, the network
+has to learn that, with one action left, a terminal card in hand while a +Actions card waits is worth less than the other
+way round. On the <a href="chains.html">chain exam</a> rl-v1's champion does this right 91.6% of the time.</p>
+</section>
+
+<section>
+<h2>Where it starts: rl-v1's checkpoint, widened</h2>
+<p>rl-v1 r2 stopped at iteration 2,219 while its score against the GA genome was still rising (67% at the start of r2, 81%
+at the end). rl-v3 loads that checkpoint: the weights and also Adam's running averages, so the optimiser goes on as if
+nothing had happened. The first layer then gets 115 new input columns with <b>zero weights</b>, and zero Adam moments for
+them. A zero-weight input changes nothing, so iteration 0 plays exactly like rl-v1. PPO then finds out for itself which
+helper inputs are worth listening to.</p>
+<p><b>The helper inputs</b> (from rl-v2, <code>rl_helpers</code> in <code>c/rl.c</code>), computed exactly from what the
+player knows:</p>
+<ul>
+<li>11 about the <b>next hand</b>: the expected coins, the chance of at least $3, $5, $6 and $8, the expected action cards,
++Actions, +Buys and +Cards in it, and the expected victory points it can buy. The next hand is the top 5 of the draw pile (its
+contents are known, its order is not), with the rest from a reshuffle when fewer than 5 are left.</li>
+<li>5 about the <b>whole deck</b>, per 5 cards: coins, action cards, +Actions, +Buys, +Cards.</li>
+<li>99 about <b>one more copy</b> of each card: how the deck's coins, +Actions and +Buys per 5 cards would change if it bought one.</li>
+</ul>
+<p>In rl-v2 these inputs lifted the from-zero run from 71% to 74% against the GA genome.</p>
+</section>
+
+<section>
+<h2>How it learns: PPO against a league</h2>
+<p><b>The games.</b> 3,000 per iteration. The network <i>samples</i> its choices from its probabilities, so it tries things.
+The opponents come from the stage's league (<a href="curriculum.html">Curriculum</a>): its past snapshots, the GA genome,
+the three bots, az-v1's network and search and, from stage 2, rl-v1's frozen champion. Games against its current self train
+both seats.</p>
+<p><b>The update.</b> Every decision gets an <i>advantage</i>: how much better the game ended (+1 win, 0 shared, −1 loss) than
+its own win estimate expected at that moment (GAE, λ = 0.95). PPO makes decisions with a positive advantage more likely and
+negative ones less likely, by at most ±20% in probability ratio. It runs 3 passes, and stops early if the policy moves too far
+(KL &gt; 0.03). A small entropy bonus (0.01) keeps it trying alternatives.</p>
+<p><b>The card school.</b> In stages 2 and 3, 15% of the games are on a kingdom with one of ten cards the champion rarely
+buys, and the learner's first buys (up to two copies, in its first six turns) are forced to that card. Those forced buys are
+not recorded, so PPO never sees them as the network's choices. Everything the network does with the card afterwards (playing
+it, trashing with it, building around it) is learned like any other decision.</p>
+</section>
+
+<section>
+<h2>The turn planner (measured, not used)</h2>
+<p>At an action decision the planner copies the game and hides what the player cannot see: the order of the draw pile and the
+opponent's hand (<code>de_hide</code>). For each legal option it plays that option, lets the network finish the turn, and scores
+the result. It does this on K shuffles; every option sees the same K shuffles, so the comparison is fair. There are two scores:
+the network's win estimate after the turn (the "value judge"), or the coins at the first buy (the "coins judge"). The engine
+gained <code>de_resume_action</code> to continue a copied game from inside the action phase. With either judge, the planner
+did not make the network win more games.</p>
+</section>
+
+<section>
+  <h2>Pictures of the real network</h2>
+  <p class="muted small">Generated by <code>site_hooks.model_viz()</code> from the newest network every 15 minutes, so they follow training.</p>
+  <div class="figs" id="figs"></div>
+</section>
+
+<section>
+  <h2>How the model changed</h2>
+  <p class="muted small">Every new best (from the runs' events), newest first. "Check" is one evaluation and flatters; the goal table on Training is the honest number.</p>
+  <div class="tablewrap"><table class="t" id="champions"></table></div>
+</section>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="model.js?v=bcc23452"></script>
+</body>
+</html>

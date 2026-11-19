@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it sees</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>How it sees</h1>
+<p class="lede">Every time the engine asks the network a question, the network gets 298 numbers (413 with the helper inputs below): what this player knows at that
+moment, plus what is being asked. It answers with 34 numbers: a score for each card (or Sentry option) and one for
+"pass"; only the legal answers count.</p>
+<section>
+<h2>The 298 inputs</h2>
+<div class="tablewrap"><table class="t">
+<tr><th>Inputs</th><th>How many</th><th>What</th><th>Scale</th></tr>
+<tr><td>my cards</td><td>33</td><td>copies of each card I own (deck, hand, discard, in play)</td><td>÷ 10</td></tr>
+<tr><td>my draw pile</td><td>33</td><td>what is left in my draw pile (its contents, not its order)</td><td>÷ 10</td></tr>
+<tr><td>opponent's cards</td><td>33</td><td>copies of each card the opponent owns (every gain is public)</td><td>÷ 10</td></tr>
+<tr><td>supply</td><td>33 + 33</td><td>cards left in each pile; which piles are in this game</td><td>÷ 10; 0/1</td></tr>
+<tr><td>game state</td><td>10</td><td>coins, buys, my turns, opponent's turns, my VP, their VP, VP lead, Provinces left, empty piles, first player</td><td>various</td></tr>
+<tr><td>my hand</td><td>33</td><td>the cards in my hand right now</td><td>× 0.2</td></tr>
+<tr><td>in play</td><td>33</td><td>the cards I have played this turn</td><td>× 0.2</td></tr>
+<tr><td>turn</td><td>2</td><td>actions left (÷ 3), whether it is my turn (Militia discards happen on theirs)</td><td></td></tr>
+<tr><td>the question</td><td>22</td><td>which kind of decision: buy, play an action, Throne Room, Chapel trash, Remodel gain, Militia discard, Sentry …</td><td>one-hot</td></tr>
+<tr><td>about</td><td>33</td><td>the card the question is about (e.g. the card Sentry revealed)</td><td>one-hot</td></tr>
+</table></div>
+<p>The first 175 are az-v1's features exactly (<code>az_features</code> in <code>az-v1/c/az.c</code>); the rest are new,
+because this network also plays the action phase, where the hand matters.</p>
+</section>
+<section>
+<h2>Helper inputs (from rl-v2): 115 more</h2>
+<p>Numbers a good player works out in their head, computed exactly from what the player knows, so the network does
+not have to learn the arithmetic. <b>The next hand</b> is the first 5 cards of the draw pile (its contents are known,
+not its order); if fewer than 5 are left, the rest come from everything else reshuffled (discard, hand, in play).
+During the opponent's turn the next hand is the hand it holds now. The odds are exact (hypergeometric), not
+simulated.</p>
+<div class="tablewrap"><table class="t">
+<tr><th>Inputs</th><th>How many</th><th>What</th></tr>
+<tr><td>next hand</td><td>9</td><td>expected coins; chance of at least $3, $5, $6, $8; expected action cards, +Actions, +Buys, +Cards</td></tr>
+<tr><td>next turn's VP</td><td>2</td><td>expected VP gain (the best Victory card the next hand can afford: Province at $8, Duchy at $5, Estate at $2, if
+there are any left) and the VP after it</td></tr>
+<tr><td>the whole deck</td><td>5</td><td>coins, action cards, +Actions, +Buys and +Cards per 5 cards (an average hand)</td></tr>
+<tr><td>if I gain this card</td><td>3 × 33</td><td>for every card in the game: how one more copy changes coins, +Actions and +Buys per 5 cards</td></tr>
+</table></div>
+<p><b>Example</b> (turn 1, hand Copper ×3 + Estate ×2): the draw pile holds 4 Coppers and an Estate, so the next hand
+is exactly that: expected coins 4.0, chance of $3+ 100%, of $5+ 0%; the best VP buy at $4 is an Estate (+1 VP).
+Gaining a Gold would add +1.05 coins per 5 cards, a Silver +0.59, a Province −0.32 (it dilutes the deck).</p>
+<p><b>How they were added.</b> rl-v1's checkpoint read only the first 298 inputs. rl-v3 gave it the 115 helper inputs with zero
+weights (so at iteration 0 it plays exactly as rl-v1), and training decides what they are worth. rl-v1's champion, which it
+meets in its league, still reads only the first 298. <code>tests/test_play_parity.py</code> checks that the browser's Python version computes
+the same numbers as the C engine.</p>
+</section>
+
+<section>
+<h2>What it does not see</h2>
+<p>The order of its own draw pile, the opponent's hand, the opponent's draw pile: the engine computes the features
+from the player's own view, and the order of the draw pile never enters them (only its contents, which a careful
+human player can count too). Unlike az-v1's search it never imagines hidden cards either: it has no search at all.</p>
+<p>The test <code>tests/test_core.py</code> checks that the C forward pass and the PyTorch
+one agree, and that GA seats in this engine replay az-v1's games exactly.</p>
+</section>
+<section>
+<h2>An example</h2>
+<p>Turn 6, the opponent just played Militia, I hold Copper, Copper, Estate, Silver, Smithy. The question:
+"Militia discard" (one of the 22 kinds), asked twice in a row. Inputs: my hand (Copper ×2, Estate, Silver, Smithy),
+"my turn" = 0, actions = 0. Nobody tells it that Estates are useless in hand: it has to find out from thousands of games in which keeping the
+Silver and the Smithy led to more wins.</p>
+</section>
+<p class="muted"></p>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+</body>
+</html>

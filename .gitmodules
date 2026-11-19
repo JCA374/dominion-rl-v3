@@ -1,0 +1,6 @@
+[submodule "engine"]
+	path = engine
+	url = https://github.com/JCA374/dominion-engine
+[submodule "az-v1"]
+	path = az-v1
+	url = https://github.com/JCA374/dominion-az-v1

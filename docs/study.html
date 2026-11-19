@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Study this project</h1>
+<p class="lede">For someone who wants to learn from this project rather than follow it: what to read in which order, the ideas
+you need, the words we use, how to run it yourself, and a few exercises.</p>
+
+<section>
+  <h2>Reading order</h2>
+<ol id="order">
+    <li><a href="index.html">Overview</a>: the chain question, its answer, and what rl-v3 does instead. 5 minutes.</li>
+    <li><a href="chains.html">Chains</a>: the exam table and the head-to-head tests. This is the core finding. 10 minutes.</li>
+    <li><a href="cards.html">Cards</a>: the engine's card tests, the model's card audit, and why there is a card school. 5 minutes.</li>
+    <li><a href="model.html">The model</a>: the widened checkpoint, the helper inputs, PPO, the planner. 15 minutes.</li>
+    <li><a href="curriculum.html">Curriculum</a> and <a href="training.html">Training</a>: the stages, and the score against the champion. 5 minutes.</li>
+    <li>The code: <code>c/rl.c</code> (<code>rl_plan</code>, <code>rl_forced_buy</code>, <code>rl_helpers</code>),
+      <code>experiments/chain_exam.py</code>, <code>experiments/plan_vs.py</code>, <code>train.py</code> (<code>STAGES</code>,
+      <code>SCHOOL</code>, <code>widen_ckpt</code>), the engine's <code>de_resume_action</code>. 1 hour.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Key concepts</h2>
+<div class="box"><h3>Measure before you build</h3><p>The project began by asking for a chain calculator. Before
+building one into the player, we measured whether the network needs it. The exam scores single decisions; the head-to-head
+test scores whole games. <b>Here:</b> <code>chain_exam.py</code>, <code>plan_vs.py</code>. <b>What people get wrong:</b> a
+visible mistake (91.6% right) is not the same as a costly one. Only the head-to-head games say whether fixing it pays.</p></div>
+<div class="box"><h3>Determinisation (planning with hidden cards)</h3><p>You cannot see the order of your draw pile. The
+planner shuffles the unseen cards K times, plays each option on each shuffle, and averages. The same shuffles are used for every
+option ("common random numbers"), so the luck cancels out of the comparison. <b>Here:</b> <code>rl_plan</code> with
+<code>de_hide</code>. <b>What people get wrong:</b> judging by the network's own win estimate looks principled, but that estimate
+is noisier than the differences between two orderings.</p></div>
+<div class="box"><h3>Warm start and zero-weight widening</h3><p>To add inputs to a trained network without changing how it
+plays, give them zero weights in the first layer (and zero optimiser state). <b>Here:</b> <code>widen_ckpt</code> in
+<code>train.py</code>. <b>What people get wrong:</b> restarting the optimiser. Adam's running averages are part of where
+training was.</p></div>
+<div class="box"><h3>Forced exploration (the card school)</h3><p>A policy that never takes an action cannot learn its value.
+Forcing the opening buys gives it decks with the card, and not recording the forced buys keeps PPO on-policy for everything
+it does choose. <b>Here:</b> <code>rl_forced_buy</code>, <code>SCHOOL</code>. <b>What people get wrong:</b> recording forced
+moves as the policy's own. Their probabilities would be wrong, and PPO's ratio with them.</p></div>
+<div class="box"><h3>Policy gradient</h3><p>Change the network so that the choices in games that went well become more
+likely. The "how well" is the advantage. <b>Here:</b> <code>ppo_update</code>. <b>What people get wrong:</b> it does not
+know <i>which</i> of a game's 40 decisions won it; only averaging over many games sorts good decisions from lucky ones,
+which is why it needs millions of games.</p></div>
+<div class="box"><h3>Advantage and GAE</h3><p>The advantage of a decision is how much better things went than the
+network itself expected at that moment. GAE builds it from the network's own win estimates along the game (λ = 0.95).
+<b>Here:</b> <code>gae()</code> in <code>rl/jobs.py</code>. <b>What people get wrong:</b> with a bad win estimate the
+advantages are bad too; the value head matters even though it never makes a decision.</p></div>
+<div class="box"><h3>PPO's clip</h3><p>One update may change the probability of a recorded choice by at most ±20%;
+beyond that the gradient stops. It keeps learning from noisy data from destroying a good policy in one step.
+<b>Where:</b> <code>clip</code>, <code>max_kl</code> in <code>CFG</code>; the "PPO step size" chart on Training.</p></div>
+<div class="box"><h3>Exploration by sampling, evaluation by argmax</h3><p>In training the network draws its choices at
+random from its probabilities; in every measurement it takes its top choice. <b>What people get wrong:</b> comparing the
+training games' win rate (with exploration) with the evaluation (without).</p></div>
+<div class="box"><h3>A league of opponents</h3><p>Opponents from several sources so the policy stays good against all of
+them, not just the latest. <b>Here:</b> stage 2 adds rl-v1's frozen champion as 25% of the games; stage 3 everything. <b>What people get wrong:</b> pure self-play can cycle (A beats B beats C beats A) without getting
+better.</p></div>
+</section>
+
+<section>
+  <h2>Glossary</h2>
+  <p class="muted small">From <code>glossary.md</code> in the repo (one <code>**term** — meaning</code> per line). The podcast narration uses the same list for names that need a pronunciation.</p>
+  <dl class="glossary" id="glossary"></dl>
+</section>
+
+<section>
+  <h2>Reproduce it</h2>
+<p>8-core laptop CPU (i5-8250U), 8 GB RAM, Linux, Python 3.14, gcc:</p>
+<pre>git clone --recursive https://github.com/JCA374/dominion-rl-v3 && cd dominion-rl-v3
+python3 -m venv .venv && .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install numpy pytest pillow matplotlib
+.venv/bin/python -m pytest -q tests                    # builds rl.so; "20 passed"
+.venv/bin/python experiments/chain_exam.py build       # 14,243 exam positions, ~10 min
+.venv/bin/python experiments/chain_exam.py score       # the exam table, seconds
+.venv/bin/python experiments/plan_vs.py opponents/rl_r2_2200.npy --k 32 --leaf 1 --engine   # ~4 min: 48%
+.venv/bin/python experiments/card_audit.py opponents/rl_r2_2200.npy --name champion         # seconds
+.venv/bin/python -u train.py --run mine                # from rl-v1's checkpoint; ~40 s per iteration</pre>
+<p>Training needs about 3 GB of free memory (3,000 games per iteration).</p>
+</section>
+
+<section>
+  <h2>Exercises</h2>
+<ol>
+  <li><b>Easy: a harder exam.</b> In <code>chain_exam.py</code>, lower <code>TOL</code> to 0 and rescore. How much of the
+    "wrong" is near-ties?</li>
+  <li><b>Medium: Throne Room.</b> The champion is weakest with Throne Room in hand. Build an exam of Throne-only kingdoms
+    (<code>engine_kingdom</code>), then check whether rl-v3's newer nets improve on it.</li>
+  <li><b>Medium: a better judge.</b> Add a third leaf to <code>rl_leaf</code>: coins plus the win estimate after the turn, with
+    a weight. Does any mix make <code>plan_vs.py</code> score above 50%?</li>
+  <li><b>Hard: does the card school pay?</b> Train two short runs from the same checkpoint, with <code>school</code> at 0 and
+    0.15, and compare their card audits and their head-to-head score.</li>
+</ol>
+</section>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="study.js?v=ca69f153"></script>
+</body>
+</html>

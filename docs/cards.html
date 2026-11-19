@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cards</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Cards: does every card work, for the engine and for the model?</h1>
+<p class="lede">Two checks. The <b>engine</b> must play all 26 kingdom cards correctly. The <b>model</b> must be able to handle
+every card and every question a card asks (which card to trash, whether to skip an action with Library, what to put back with
+Sentry, and so on).</p>
+
+<h2>The engine</h2>
+<p>The engine (<code>engine/</code>) has a hand-made position for every card in <code>tests/test_rules.py</code>. Market,
+Laboratory, Festival, Chapel, Moneylender and Mine got theirs in rl-v3, along with Throne Room on each of the 25 other action
+cards. <code>tests/test_cards_all.py</code> plays each card in 40 whole games between random players, in both the Python and
+the C engine. Each card must be bought and played, every question it asks must come up, and both engines must play identical
+games. The one exception is Bandit's choice between Silver and Gold, which only comes up when a victim reveals both; the parity test
+covers it. <b>83 engine tests pass.</b></p>
+
+<h2>The model</h2>
+<p class="muted small">For each card: games against the GA genome on kingdoms with that card plus 9 random others (40 kingdoms × 2 seats).
+<b>Takes it</b>: the share of games in which it bought at least one. <b>Plays</b>: plays per game. <b>Questions</b>: the decisions
+this card asks, and whether the model answered each at least once. <b>Errors</b>: illegal answers, which must be 0.</p>
+<div id="pick" class="picker"></div>
+<div id="audit"></div>
+<h3>What we found, and the card school</h3>
+<p>rl-v1's champion never made an illegal choice, but it <b>never bought Chapel</b>, and it rarely bought Mine, Library,
+Moneylender, Council Room, Smithy, Village and Merchant. A network cannot learn to play a card it never owns, so it cannot find out
+whether buying the card would pay. rl-v3's curriculum therefore has a <b>card school</b>. In 15% of the training games the learner's
+first buys are forced to two copies of one of these cards. Those forced buys are not trained on: it learns to <i>play</i> the cards
+from real games, and whether to <i>buy</i> them stays its own decision. Given a forced Chapel or Mine, the champion already plays it
+4.5 and 6.6 times per game.</p>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="cards.js?v=f6649e33"></script>
+</body>
+</html>

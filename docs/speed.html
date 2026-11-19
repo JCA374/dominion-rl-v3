@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speed</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Speed</h1>
+<p class="lede">Intel i5-8250U laptop CPU, 4 cores / 8 threads, 8 GB RAM, no GPU.
+Everything that happens inside a game is C (the engine, the GA genome, az-v1's agent and this project's network); PyTorch
+only trains. Measured end to end:</p>
+<div class="tablewrap"><table class="t">
+<tr><th>What</th><th>Time</th></tr>
+<tr><td>a game, network vs GA genome, one core</td><td>~3 ms</td></tr>
+<tr><td>a game, GA genome vs GA genome</td><td>0.27 ms</td></tr>
+<tr><td>one planner rollout (copy the game, hide the unseen cards, play to the end of the turn)</td><td>~75 µs</td></tr>
+<tr><td>a game with the planner at every action decision, K = 8 / 32</td><td>~18 / ~60 ms</td></tr>
+<tr><td>a game, az-v1's searching agent (400 simulations per buy) vs GA genome</td><td>460 ms</td></tr>
+<tr><td>building the chain exam: 600 games, planner K = 128 on 14,243 positions, 3 workers</td><td>10 min</td></tr>
+<tr><td>a PPO iteration: 3,000 games + update + 900 evaluation games, 7 workers</td><td>~40 s</td></tr>
+</table></div>
+<p>The planner was fast enough to use at play time (about 20 times cheaper than az-v1's search), but it brought no gain
+(<a href="chains.html">Chains</a>), so the released player is the network alone. Per-iteration times are on the Training tab
+("Iteration time").</p>
+<p class="muted"></p>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+
+</body>
+</html>

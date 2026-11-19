@@ -1,0 +1,20 @@
+[
+ {
+  "label": "rl-v1 champion",
+  "name": "rl-v1 champion",
+  "file": "rl_r2_2200.npy",
+  "note": "rl-v1 r2 at iteration 2,200: started as a copy of the GA genome, then PPO. 82.8% against the GA base. Hard."
+ },
+ {
+  "label": "rl-v2 from zero",
+  "name": "rl-v2 from zero",
+  "file": "rl_v2_z1h_1100.npy",
+  "note": "Learned from random weights by self-play only: money, Witch and Militia; few engines. Medium."
+ },
+ {
+  "label": "Big Money (a simple bot)",
+  "name": "Big Money",
+  "file": null,
+  "note": "Buys Province at $8, Gold at $6, Silver at $3, nothing else. A good first opponent."
+ }
+]

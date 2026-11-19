@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play</title>
+<link rel="stylesheet" href="style.css?v=cf5c75e2">
+</head>
+<body>
+<main>
+<h1>Play</h1>
+<section id="vs-section">
+<h2>Play against a model</h2>
+<p class="lede">You against one of the networks, in your browser: the real rules engine and the real network (the
+same moves as in training, checked by <code>tests/test_play_parity.py</code>). Treasures are played for you; Moat is
+revealed for you. The first start downloads Python for the browser (about 10 MB), so it takes a moment.</p>
+<div id="vs"></div>
+</section>
+<h2>Watch the models play</h2>
+<p class="lede">Pick a model (newest first) and a game. Every model plays the same games, so you can compare them. A clip plays
+once and stops on its result; press play to watch it again.</p>
+<div class="picker" id="models"></div>
+<p class="muted small" id="mnote"></p>
+<div class="player" id="player"><video id="video" controls muted playsinline preload="metadata"></video></div>
+<p id="caption"></p>
+<div class="picker"><button id="next">Next game →</button></div>
+<h2>Games</h2>
+<div class="games" id="games"></div>
+<h2>All models on this game</h2>
+<div class="cmp" id="cmp"></div>
+</main>
+<script src="site.js?v=c9acbbb6"></script>
+<script src="common.js?v=958183f8"></script>
+<script src="project.js?v=bc963fa2"></script>
+<script src="playvs.js?v=5910895e"></script>
+<script src="play.js?v=bdb3d051"></script>
+</body>
+</html>

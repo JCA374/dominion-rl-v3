@@ -1,0 +1,11 @@
+{
+ "t": "2026-11-19",
+ "question": "Does a turn planner (or a chain rule) make rl-v1's champion net win more? Head to head against the same net without it, both seats, same kingdoms and seeds.",
+ "tests": [
+  {"what": "planner, value judge (net's value after the turn), K=32", "kingdoms": "random", "games": 800, "score": 0.488, "se": 0.017},
+  {"what": "planner, coins judge (coins at the first buy), K=32", "kingdoms": "random", "games": 800, "score": 0.485, "se": 0.017},
+  {"what": "planner, coins judge, K=32", "kingdoms": "engine (2-3 villages/cantrips + 2-3 draw/Throne)", "games": 800, "score": 0.482, "se": 0.017},
+  {"what": "chain rule: last action never on a terminal while a +Actions card is in hand", "kingdoms": "engine", "games": 2000, "score": 0.499, "se": 0.011, "note": "the rule changed 15 of 6,335 action decisions: the net almost never makes that mistake"}
+ ],
+ "conclusion": "No gain from planning the action phase: the network already plays its chains well enough that fixing the remaining slips does not change who wins."
+}
