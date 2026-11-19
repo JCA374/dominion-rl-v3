@@ -20,3 +20,4 @@
 {"t": "2026-11-19T14:41:56", "kind": "goal_best", "iter": 581, "check": {"score": 0.8938, "n": 400}, "champion": "runs/c1/net_581.npy", "eval": "GA 0.894 champ 0.590 BM 0.955 Smithy 0.880 Witch 0.815 bots 0.883"}
 {"t": "2026-11-19T16:05:17", "kind": "goal_best", "iter": 701, "check": {"score": 0.905, "n": 400}, "champion": "runs/c1/net_701.npy", "eval": "GA 0.905 champ 0.640 BM 0.960 Smithy 0.905 Witch 0.865 bots 0.910"}
 {"t": "2026-11-19T17:07:41", "kind": "goal_best", "iter": 795, "check": {"score": 0.9062, "n": 400}, "champion": "runs/c1/net_795.npy", "eval": "GA 0.906 champ 0.625 BM 0.985 Smithy 0.895 Witch 0.870 bots 0.917"}
+{"t": "2026-11-19T17:57:01", "kind": "goal_best", "iter": 866, "check": {"score": 0.91, "n": 400}, "champion": "runs/c1/net_866.npy", "eval": "GA 0.910 champ 0.630 BM 0.970 Smithy 0.910 Witch 0.860 bots 0.913"}
