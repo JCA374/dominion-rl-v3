@@ -1,0 +1,22 @@
+{
+ "t": "2026-11-20 15:07:44",
+ "label": "c2 iteration 2450",
+ "note": "",
+ "policy": "runs/c2/net_2450.npy",
+ "n": 1000,
+ "score": 0.899,
+ "ci": [
+  0.8788,
+  0.9162
+ ],
+ "big_money": 0.985,
+ "smithy_bm": 0.9,
+ "witch_bm": 0.855,
+ "secs": 6,
+ "vs_rl": 0.7,
+ "vs_rl_ci": [
+  0.6709,
+  0.7276
+ ],
+ "vs_rl_n": 1000
+}
