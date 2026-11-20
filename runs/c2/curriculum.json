@@ -1,0 +1,29 @@
+{
+ "note": "PPO from rl-v1's best checkpoint (iteration 2,219) with rl-v2's helper inputs added at zero weight. The evaluation games are only measured, never trained on.",
+ "stages": [
+  {
+   "name": "home league",
+   "world": "opponents: itself 20%, own past snapshots 15%, GA base genome 30%, the 3 bots 15%, az-v1 net 15%, az-v1 search 5%",
+   "reward": "+1 win, 0 shared win, -1 loss, at the end of the game only",
+   "pass": "eval against the GA base at least 84%",
+   "cap": "300 iterations",
+   "expect": "rl-v1's own opponents, so the only change is the new inputs: learns to use them without forgetting."
+  },
+  {
+   "name": "champion",
+   "world": "opponents: itself 20%, own past snapshots 15%, rl-v1's champion (net 2,200) 25%, GA base genome 20%, the 3 bots 10%, az-v1 net 5%, az-v1 search 5%; card school in 15% of the games (first buys forced to 2 copies of a card the champion rarely buys: Chapel, Mine, Library, Moneylender, Council Room, Smithy, Village, Merchant, Remodel, Throne Room)",
+   "reward": "+1 win, 0 shared win, -1 loss, at the end of the game only",
+   "pass": "eval against the champion at least 56%",
+   "cap": "600 iterations",
+   "expect": "A quarter of the games against rl-v1's frozen best net: finds and exploits its habits."
+  },
+  {
+   "name": "open league",
+   "world": "opponents: itself 15%, own past snapshots 20%, rl-v1's champion (net 2,200) 15%, rl-v1's released net 5%, rl-v2's from-zero net 10%, GA base genome 15%, the 3 bots 10%, az-v1 net 5%, az-v1 search 5%; card school in 15% of the games (first buys forced to 2 copies of a card the champion rarely buys: Chapel, Mine, Library, Moneylender, Council Room, Smithy, Village, Merchant, Remodel, Throne Room)",
+   "reward": "+1 win, 0 shared win, -1 loss, at the end of the game only",
+   "pass": "never (the last stage)",
+   "cap": "none",
+   "expect": "Every earlier model, so beating the champion does not cost strength elsewhere."
+  }
+ ]
+}
