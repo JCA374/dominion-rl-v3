@@ -35,6 +35,8 @@ CFG = {
     "games": 3000,           # PPO games per iteration
     "focus_share": 0.0,      # share of training games on kingdoms without the focus_exclude cards (kingdom curriculum)
     "focus_exclude": "Witch,Militia,Bandit,Bureaucrat,Gardens",
+    "drill_share": 0.0,      # card drill: share of non-bot games on a kingdom with one of the drill cards (see DRILL)
+    "drill": "Harbinger,Workshop,Mine,Bureaucrat,Militia,Witch,Vassal,Sentry,Gardens,Library",
     "snapshot_every": 10,
     "snapshots": 8,
     "temp": 1.0,
@@ -350,9 +352,17 @@ def main():
                 u -= share
             if opp is None or (opp["kind"] == "net" and opp["path"] is None):
                 opp = {"kind": "net", "path": learner, "tag": "self"}
-            force = None
+            force = opp_force = drill = None
             if opp["kind"] == "bot":
                 k = kingdom_for_bot(rng, opp["name"])
+            elif rng.random() < cfg["drill_share"]:
+                drill = DRILL_CARDS(cfg)[i % len(DRILL_CARDS(cfg))]
+                k = school_kingdom(rng, drill)
+                u2 = rng.random()
+                if u2 < 0.3:
+                    force = drill                                  # the learner plays it
+                elif u2 < 0.6 and opp["kind"] == "net":
+                    opp_force = drill                              # the learner plays against it
             elif rng.random() < STAGES[stage].get("school", 0):
                 force = SCHOOL[i % len(SCHOOL)]
                 k = school_kingdom(rng, force)
@@ -360,7 +370,8 @@ def main():
                 k = focus_kingdom(rng, cfg["focus_exclude"].split(","))
             else:
                 k = random_kingdom(rng)
-            games.append({"kingdom": k, "seed": rng.getrandbits(32), "seat": seat, "opp": opp, "force": force})
+            games.append({"kingdom": k, "seed": rng.getrandbits(32), "seat": seat, "opp": opp, "force": force,
+                          "opp_force": opp_force, "drill": drill})
         jobs = [{"games": c, "learner": learner, "nh": cfg["nh"], "temp": cfg["temp"], "lam": cfg["lam"]}
                 for c in chunks(games, cfg["chunk"])]
         parts = list(pool.imap_unordered(_ppo, jobs))
@@ -377,6 +388,8 @@ def main():
               "selfplay_vs_rlv2": float(np.mean([r["points"] for r in res if r["opp"] == "rl-v2"] or [float("nan")])),
               "school_games": sum(1 for r in res if r.get("school")),
               "school_points": float(np.mean([r["points"] for r in res if r.get("school")] or [float("nan")])),
+              "drill_games": sum(1 for r in res if r.get("drill")),
+              "drill_points": float(np.mean([r["points"] for r in res if r.get("drill")] or [float("nan")])),
               "decisions": int(len(data["A"])),
               "value_mse_fresh": float(((data["V"] - data["Z"]) ** 2).mean()),
               "t_play": t_play}
@@ -485,6 +498,12 @@ def entropy_bonus(cfg, it):
     return cfg["ent"] + (cfg["ent_start"] - cfg["ent"]) * f
 
 
+def DRILL_CARDS(cfg):
+    """Card drill (results/card_losses/: cards the model loses against): a kingdom with the card, and in 30% of
+    those games the learner's first buys forced to 2 copies, in 30% (net opponents) the opponent's."""
+    return cfg["drill"].split(",")
+
+
 def school_kingdom(rng, card):
     """The card and 9 random others."""
     import rl.core  # noqa: F401
@@ -531,7 +550,8 @@ def make_row(it, t0, m, sp, e):
     row["eval_capped"] = round(e["capped"], 4)
     row["stage"] = sp.get("stage", 1)
     for k in ("selfplay_vs_ga", "selfplay_vs_bots", "selfplay_vs_past", "selfplay_vs_aznet", "selfplay_vs_azsearch",
-              "selfplay_vs_rlv1", "selfplay_vs_champion", "selfplay_vs_rlv2", "school_games", "school_points", "decisions", "value_mse_fresh",
+              "selfplay_vs_rlv1", "selfplay_vs_champion", "selfplay_vs_rlv2", "school_games", "school_points", "drill_games", "drill_points", "decisions",
+              "value_mse_fresh",
               "t_play", "t_train", "t_iter"):
         row[k] = (round(sp[k], 4) if isinstance(sp[k], float) and not math.isnan(sp[k]) else sp[k]) if k in sp else ""
     return row

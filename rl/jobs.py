@@ -65,7 +65,7 @@ def ppo_chunk(job: dict) -> dict:
         self_play = gm["opp"]["kind"] == "net" and gm["opp"]["path"] == job["learner"]
         other = _seat(gm["opp"], k, sample=True, record=self_play)
         seats = [me, other] if seat == 0 else [other, me]
-        force = (gm.get("force"), None) if seat == 0 else (None, gm.get("force"))
+        force = (gm.get("force"), gm.get("opp_force")) if seat == 0 else (gm.get("opp_force"), gm.get("force"))
         r = play(seats, k, gm["seed"], rng_seed=gm["seed"] * 31 + 7, nh=job["nh"], temp=job["temp"], force=force)
         rec = r["rec"]
         for s in ([0, 1] if self_play else [seat]):
@@ -78,7 +78,7 @@ def ppo_chunk(job: dict) -> dict:
                           "V": rec["V"][m], "KIND": rec["KIND"][m], "TURN": rec["TURN"][m], "ADV": adv, "RET": ret,
                           "Z": np.full(m.sum(), z, np.float32)})
         results.append({"opp": gm["opp"].get("tag", gm["opp"]["kind"]), "points": (outcome(r, seat) + 1) / 2,
-                        "school": gm.get("force"),
+                        "school": gm.get("force") if not gm.get("drill") else None, "drill": gm.get("drill"),
                         "turns": max(r["turns"]), "capped": r["capped"]})
     out = _concat(parts, KEYS)
     out["results"] = results

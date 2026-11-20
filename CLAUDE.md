@@ -11,4 +11,11 @@ turn planner that answered "does the network need a chain model?" (no: see READM
 - The engine submodule is newer than az-v1's (adds `de_resume_action`, no rules); `tests/test_core.py` checks that.
 - Site: ml-project-site (`publish.py`, `site.json`, `site_hooks.py`, `docs/`), loop `publish_loop.sh`. Chains and Cards
   pages read `results/chain_exam.json`, `plan_tests.json`, `card_audit_*.json` (site_hooks.audits() adds the newest net every 100 iterations).
+- Run c2 (card drill, from c1 iteration 2363): `systemd-run --user --unit=rl-v3-c2 --working-directory=$PWD bash -c
+  'exec .venv/bin/python -u train.py --run c2 --continue --set drill_share=0.3 lr=0.0002 workers=5 >> logs/c2.log 2>&1'`.
+  Run training and `publish_loop.sh` as systemd user units, not in a terminal: on 20 Nov systemd-oomd killed the terminal
+  (and c1 with it). Stop: `systemctl --user stop rl-v3-c2`.
+- Card losses: `experiments/card_losses.py <net> --name X` (64,000 games, 35 s per 16,000) then
+  `experiments/card_losses_report.py X --ref champion_ref` (same games with the champion; report to `docs/reports/`).
+- Podcast: project-podcast skill, `podcast.conf`. The voice studio's venv runs on uv's Python 3.12 (the OS moved to 3.14).
 - Never put personal names or home paths on the site, in commits or podcasts.
