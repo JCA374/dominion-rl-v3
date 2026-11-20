@@ -130,3 +130,18 @@ body.game nav.top { display: none; }
   background: var(--accent); color: var(--panel); display: grid; place-items: center; font-weight: 650; font-size: .85rem; }
 @media (max-width: 480px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } .tiles.base { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .hb { grid-template-columns: minmax(70px, 38%) 1fr 40px; } }
+
+/* hint checkbox, suggested move, card text, supply groups */
+.hint { display: inline-flex; align-items: center; gap: 5px; font-size: .9rem; border: 1px solid var(--line); border-radius: 99px;
+  padding: 6px 11px; cursor: pointer; white-space: nowrap; user-select: none; }
+.hint input { width: 18px; height: 18px; margin: 0; accent-color: var(--star); }
+.hint:has(input:checked) { border-color: var(--star); background: color-mix(in srgb, var(--star) 18%, var(--panel)); }
+.tile.best { border-color: var(--star) !important; box-shadow: 0 0 0 2px var(--star), 0 0 14px color-mix(in srgb, var(--star) 60%, transparent) !important;
+  animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 3px var(--star), 0 0 4px transparent; } }
+@media (prefers-reduced-motion: reduce) { .tile.best { animation: none; } }
+.tile .tx { display: block; font-size: .68rem; line-height: 1.25; color: var(--muted); margin-top: 2px; }
+.grp + .grp { margin-top: 8px; }
+.grp .gl { font-size: .72rem; color: var(--muted); margin: 0 0 3px 2px; }
+.tiles { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+@media (max-width: 480px) { .tiles, .tiles.base { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g-top a[href="learn.html"] { display: none; } }

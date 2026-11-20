@@ -44,6 +44,15 @@
   const TYPE = (n) => ['Copper', 'Silver', 'Gold'].includes(n) ? 't-tre' : ['Estate', 'Duchy', 'Province', 'Gardens'].includes(n) ? 't-vic'
     : n === 'Curse' ? 't-cur' : ['Militia', 'Witch', 'Bureaucrat', 'Bandit'].includes(n) ? 't-atk' : '';
   const BASE = new Set(['Copper', 'Silver', 'Gold', 'Estate', 'Duchy', 'Province', 'Curse']);
+  // the supply, grouped by what a card is for (each card in one group; cheapest first within a group)
+  const GROUPS = [
+    ['Treasure', ['Copper', 'Silver', 'Gold']],
+    ['Victory and Curse', ['Estate', 'Duchy', 'Province', 'Gardens', 'Curse']],
+    ['Attack', ['Militia', 'Bureaucrat', 'Witch', 'Bandit']],
+    ['Draw cards', ['Moat', 'Smithy', 'Council Room', 'Laboratory', 'Library']],
+    ['More actions, buys or money', ['Cellar', 'Harbinger', 'Merchant', 'Vassal', 'Village', 'Poacher', 'Throne Room', 'Festival', 'Market', 'Sentry']],
+    ['Trash and gain', ['Chapel', 'Workshop', 'Moneylender', 'Remodel', 'Mine', 'Artisan']],
+  ];
   const DEFAULT_SPEC = {
     advisor: null, toggles: { win_probability: true, suggestion: false, opponent_thinking: false },
     suggestion: { show_top: 3, mark_on_board: true }, start: { opponent: 0, seat: 'random', kingdom: 'random' },
@@ -74,12 +83,16 @@
   async function init() {
     loadPrefs();
     if (location.hash.indexOf('learn') >= 0) prefs.suggestion = true;   // from the Learn page: suggestions on (not saved)
+    // tap and hold (or right-click) any card for its full text, even when it can be chosen
+    document.addEventListener('contextmenu', (e) => { const b = e.target.closest('.tile'); if (b) { e.preventDefault(); toast(`${b.dataset.card}: ${TEXT[b.dataset.card] || ''}`); } });
     try { spec = merge(DEFAULT_SPEC, await (await fetch('playvs/spec.json', { cache: 'no-store' })).json()); } catch (e) { spec = DEFAULT_SPEC; }
     try { models = await (await fetch('playvs/models.json', { cache: 'no-store' })).json(); } catch (e) { models = []; }
     choice.opp = Math.min(prefs.opp != null ? prefs.opp : spec.start.opponent || 0, Math.max(0, models.length - 1));
     choice.seat = prefs.seat || spec.start.seat || 'random';
     choice.seed = 1 + Math.floor(Math.random() * 99999);
     el('g-gear').onclick = openDrawer;
+    el('g-hint').checked = !!on('suggestion');
+    el('g-hint').onchange = () => { prefs.suggestion = el('g-hint').checked; savePrefs(); if (v) draw(v); };
     el('g-drawer').onclick = (e) => { if (e.target.id === 'g-drawer') closeDrawer(); };
     renderSetup();
     const slow = navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''));
@@ -209,23 +222,25 @@
     const opts = q ? new Set(q.options.map((o) => o.id)) : new Set();
     const best = adv && on('suggestion') ? adv.probs.slice(0, spec.suggestion.show_top) : [];
     const star = new Map(spec.suggestion.mark_on_board ? best.slice(0, 1).map(([id, p]) => [id, p]) : []);
+    const top = best.length ? best[0][0] : null;               // the suggested answer: highlighted on the board
     if (adv) lastWin = adv.win;
     if (res) lastWin = res.won ? 1 : res.shared ? 0.5 : 0;
 
     const supplyTile = (s) => {
       const can = q && SUPPLY_KINDS.has(q.kind) && opts.has(s.id);
-      const cls = ['tile', TYPE(s.card), q && SUPPLY_KINDS.has(q.kind) ? (can ? 'can' : 'dim') : '', s.left === 0 ? 'empty' : ''].join(' ');
+      const cls = ['tile', TYPE(s.card), q && SUPPLY_KINDS.has(q.kind) ? (can ? 'can' : 'dim') : '', s.left === 0 ? 'empty' : '', can && s.id === top ? 'best' : ''].join(' ');
       return `<button class="${cls}" data-card="${h(s.card)}" ${can ? `data-a="${s.id}"` : ''}>
-        <span class="n">${h(s.card)}</span><span class="m">$${s.cost} · ${s.left}</span>${can && star.has(s.id) ? `<span class="star">★ ${P(star.get(s.id))}</span>` : ''}</button>`;
+        <span class="n">${h(s.card)}</span><span class="m">$${s.cost} · ${s.left} left</span><span class="tx">${h(TEXT[s.card] || '')}</span>${can && star.has(s.id) ? `<span class="star">★ ${P(star.get(s.id))}</span>` : ''}</button>`;
     };
     const idOf = (name) => (v.supply.find((s) => s.card === name) || {}).id;
     const handTile = (n) => {
       const id = idOf(n), can = q && HAND_KINDS.has(q.kind) && opts.has(id);
-      return `<button class="tile ${TYPE(n)} ${q && HAND_KINDS.has(q.kind) ? (can ? 'can' : 'dim') : ''}" data-card="${h(n)}" ${can ? `data-a="${id}"` : ''}>
-        <span class="n">${h(n)}</span><span class="m">${h(TEXT[n] || '')}</span>${can && star.has(id) ? `<span class="star">★ ${P(star.get(id))}</span>` : ''}</button>`;
+      return `<button class="tile ${TYPE(n)} ${q && HAND_KINDS.has(q.kind) ? (can ? 'can' : 'dim') : ''} ${can && id === top ? 'best' : ''}" data-card="${h(n)}" ${can ? `data-a="${id}"` : ''}>
+        <span class="n">${h(n)}</span><span class="tx">${h(TEXT[n] || '')}</span>${can && star.has(id) ? `<span class="star">★ ${P(star.get(id))}</span>` : ''}</button>`;
     };
-    const ORDER = ['Copper', 'Silver', 'Gold', 'Estate', 'Duchy', 'Province', 'Curse'];
-    const base = ORDER.map((n) => v.supply.find((s) => s.card === n)).filter(Boolean), kingdom = v.supply.filter((s) => !BASE.has(s.card));
+    const byName = new Map(v.supply.map((s) => [s.card, s]));
+    const groups = GROUPS.map(([g, names]) => [g, names.map((n) => byName.get(n)).filter(Boolean).sort((a, b) => a.cost - b.cost)])
+      .filter(([, ss]) => ss.length);
     const prov = (v.supply.find((s) => s.card === 'Province') || {}).left;
     const tt = spec.turn.show_their_turn ? theirTurn(v.log) : [];
     const think = on('opponent_thinking') && v.thinking ? `<div class="muted small">It considered (${h(v.thinking.kind)}): ${v.thinking.top.map(([l, p]) => `${h(l)} ${P(p)}`).join(' · ')}; its own win estimate ${P((v.thinking.value + 1) / 2)}.</div>` : '';
@@ -235,7 +250,7 @@
       ${on('win_probability') && game && game.advisor && lastWin != null ? `<div class="wbar" title="The advisor's estimate"><div class="f" style="width:${(100 * lastWin).toFixed(1)}%"></div>
         <div class="l"><span>You ${P(lastWin)}</span><span>${P(1 - lastWin)}</span></div></div>${spark(v.wp, res)}` : ''}
       ${tt.length || think ? `<div class="pane their"><h3>Their last turn</h3>${tt.slice(-10).map((l) => `<div>${h(said(l.text))}</div>`).join('')}${tt.length > 10 ? `<div class="muted small">and ${tt.length - 10} earlier moves (game log)</div>` : ''}${think}</div>` : ''}
-      <div class="pane"><h3>Supply</h3><div class="tiles base">${base.map(supplyTile).join('')}</div><div class="tiles">${kingdom.map(supplyTile).join('')}</div></div>
+      <div class="pane"><h3>Supply</h3>${groups.map(([g, ss]) => `<div class="grp"><div class="gl">${h(g)}</div><div class="tiles">${ss.map(supplyTile).join('')}</div></div>`).join('')}</div>
       <div class="pane"><h3>Your hand${v.actions != null ? ` · ${v.actions} action${v.actions === 1 ? '' : 's'} · ${v.buys} buy${v.buys === 1 ? '' : 's'} · $${v.coins}` : ''}</h3>
         <div class="hand">${v.me.hand.map(handTile).join('') || '<span class="muted">empty</span>'}</div>
         ${v.me.play.length ? `<div class="chips" style="margin-top:6px"><span class="muted small">In play:</span>${v.me.play.map((n) => `<span class="chip">${h(n)}</span>`).join('')}</div>` : ''}
@@ -307,10 +322,11 @@
       ${sw('opponent_thinking', "Opponent's thinking", 'What the opponent network weighed on its last move.')}
       <div class="row">${canUndo ? '<button class="big ghost" id="g-undo">↶ Take back my last move</button>' : ''}
         ${S ? '<button class="big ghost" id="g-new">New game</button>' : ''}</div>
+      <p><a href="learn.html">Learn: how to read the page, the model's tactics and a quiz →</a></p>
       <details><summary><b>Game spec</b> <span class="muted small">(playvs/spec.json)</span></summary>
         <p class="muted small">${h(spec._about || '')}</p>
         <dl class="spec">${flat.map(([k, x]) => `<dt>${h(k)}</dt><dd><b>${h(JSON.stringify(x))}</b> ${h((spec.about || {})[k] || '')}</dd>`).join('')}</dl></details>`;
-    el('g-panel').querySelectorAll('.tg').forEach((c) => { c.onchange = () => { prefs[c.dataset.k] = c.checked; savePrefs(); if (v) draw(v); }; });
+    el('g-panel').querySelectorAll('.tg').forEach((c) => { c.onchange = () => { prefs[c.dataset.k] = c.checked; savePrefs(); el('g-hint').checked = !!on('suggestion'); if (v) draw(v); }; });
     el('g-close').onclick = closeDrawer;
     if (el('g-undo')) el('g-undo').onclick = () => { closeDrawer(); act(() => S.undo(1)); };
     if (el('g-new')) el('g-new').onclick = () => { closeDrawer(); renderSetup(); };
