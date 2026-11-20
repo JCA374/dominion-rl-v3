@@ -1,0 +1,950 @@
+{
+ "t": "2026-11-20 12:23",
+ "net": "runs/c1/net_2300.npy",
+ "name": "c1_2300",
+ "secs": 41,
+ "games": 2080,
+ "cards": {
+  "Artisan": {
+   "games": 80,
+   "win": 0.85,
+   "bought_in": 0.75,
+   "copies_bought": 1.3375,
+   "plays_per_game": 6.0875,
+   "asks_answered": {
+    "Artisan gain": true,
+    "Artisan topdeck": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.85,
+    "plays_per_game": 6.9875,
+    "asks_answered": {
+     "Artisan gain": true,
+     "Artisan topdeck": true
+    },
+    "errors": 0,
+    "answers": {
+     "Artisan gain": {
+      "Laboratory": 131,
+      "Duchy": 114,
+      "Festival": 65,
+      "Market": 62,
+      "Gardens": 53,
+      "Sentry": 50,
+      "Throne Room": 36,
+      "Silver": 32,
+      "Smithy": 32,
+      "Village": 28,
+      "Witch": 22,
+      "Council Room": 19,
+      "Vassal": 17,
+      "Estate": 16,
+      "Library": 16,
+      "Militia": 6,
+      "Merchant": 5,
+      "Bandit": 5,
+      "Poacher": 4,
+      "Bureaucrat": 3,
+      "Moat": 2,
+      "Remodel": 2,
+      "Harbinger": 2,
+      "Cellar": 1,
+      "Copper": 1,
+      "Mine": 1,
+      "Curse": 1
+     },
+     "Artisan topdeck": {
+      "Laboratory": 92,
+      "Estate": 84,
+      "Copper": 73,
+      "Duchy": 49,
+      "Artisan": 43,
+      "Sentry": 41,
+      "Silver": 40,
+      "Festival": 36,
+      "Market": 34,
+      "Throne Room": 30,
+      "Village": 23,
+      "Witch": 22,
+      "Vassal": 14,
+      "Curse": 14,
+      "Chapel": 13,
+      "Province": 12,
+      "Smithy": 12,
+      "Council Room": 11,
+      "Bureaucrat": 9,
+      "Poacher": 9,
+      "Moat": 8,
+      "Militia": 8,
+      "Gardens": 6,
+      "Library": 6,
+      "Remodel": 5,
+      "Gold": 4,
+      "Merchant": 3,
+      "Bandit": 3,
+      "Cellar": 2,
+      "Harbinger": 2,
+      "Moneylender": 1,
+      "Mine": 1
+     }
+    }
+   }
+  },
+  "Bandit": {
+   "games": 80,
+   "win": 0.8875,
+   "bought_in": 0.55,
+   "copies_bought": 0.6375,
+   "plays_per_game": 3.5,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Bandit trash": false
+   },
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.8,
+    "plays_per_game": 5.6875,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Bureaucrat": {
+   "games": 80,
+   "win": 0.85625,
+   "bought_in": 0.275,
+   "copies_bought": 0.375,
+   "plays_per_game": 0.8375,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Bureaucrat topdeck": false
+   },
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.58125,
+    "plays_per_game": 7.3375,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Cellar": {
+   "games": 80,
+   "win": 0.93125,
+   "bought_in": 0.5125,
+   "copies_bought": 1.0,
+   "plays_per_game": 3.0,
+   "asks_answered": {
+    "Cellar discard": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.56875,
+    "plays_per_game": 19.15,
+    "asks_answered": {
+     "Cellar discard": true
+    },
+    "errors": 0,
+    "answers": {
+     "Cellar discard": {
+      "Copper": 1691,
+      "stop": 1197,
+      "Estate": 731,
+      "Cellar": 351,
+      "Curse": 219,
+      "Chapel": 177,
+      "Silver": 140,
+      "Province": 124,
+      "Duchy": 77,
+      "Gardens": 62,
+      "Gold": 56,
+      "Moat": 53,
+      "Smithy": 51,
+      "Vassal": 45,
+      "Village": 38,
+      "Festival": 38,
+      "Artisan": 25,
+      "Laboratory": 22,
+      "Throne Room": 20,
+      "Militia": 18,
+      "Moneylender": 16,
+      "Market": 16,
+      "Poacher": 14,
+      "Sentry": 10,
+      "Witch": 10,
+      "Remodel": 10,
+      "Merchant": 9,
+      "Harbinger": 9,
+      "Bandit": 8,
+      "Council Room": 4,
+      "Library": 3,
+      "Workshop": 2
+     }
+    }
+   }
+  },
+  "Chapel": {
+   "games": 80,
+   "win": 0.925,
+   "bought_in": 0.85,
+   "copies_bought": 1.0125,
+   "plays_per_game": 5.9,
+   "asks_answered": {
+    "Chapel trash": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.88125,
+    "plays_per_game": 7.45,
+    "asks_answered": {
+     "Chapel trash": true
+    },
+    "errors": 0,
+    "answers": {
+     "Chapel trash": {
+      "Copper": 520,
+      "stop": 518,
+      "Estate": 238,
+      "Chapel": 116,
+      "Curse": 100,
+      "Village": 1,
+      "Witch": 1
+     }
+    }
+   }
+  },
+  "Council Room": {
+   "games": 80,
+   "win": 0.90625,
+   "bought_in": 0.1625,
+   "copies_bought": 0.4125,
+   "plays_per_game": 1.875,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.65,
+    "plays_per_game": 6.4375,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Festival": {
+   "games": 80,
+   "win": 0.925,
+   "bought_in": 0.7375,
+   "copies_bought": 2.7375,
+   "plays_per_game": 12.8875,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.85,
+    "plays_per_game": 19.5125,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Gardens": {
+   "games": 80,
+   "win": 0.875,
+   "bought_in": 0.7875,
+   "copies_bought": 2.9125,
+   "plays_per_game": 0.0,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.4,
+    "plays_per_game": 0.0,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Harbinger": {
+   "games": 80,
+   "win": 0.84375,
+   "bought_in": 0.425,
+   "copies_bought": 0.9875,
+   "plays_per_game": 3.5,
+   "asks_answered": {
+    "Harbinger topdeck": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7,
+    "plays_per_game": 20.275,
+    "asks_answered": {
+     "Harbinger topdeck": true
+    },
+    "errors": 0,
+    "answers": {
+     "Harbinger topdeck": {
+      "stop": 274,
+      "Gold": 119,
+      "Silver": 69,
+      "Village": 41,
+      "Sentry": 38,
+      "Festival": 35,
+      "Artisan": 33,
+      "Laboratory": 32,
+      "Witch": 30,
+      "Harbinger": 29,
+      "Smithy": 25,
+      "Market": 19,
+      "Copper": 17,
+      "Poacher": 17,
+      "Chapel": 17,
+      "Bandit": 16,
+      "Remodel": 14,
+      "Militia": 14,
+      "Throne Room": 14,
+      "Vassal": 8,
+      "Curse": 7,
+      "Moat": 6,
+      "Merchant": 6,
+      "Estate": 6,
+      "Moneylender": 5,
+      "Council Room": 5,
+      "Bureaucrat": 3,
+      "Province": 1,
+      "Duchy": 1,
+      "Library": 1,
+      "Cellar": 1
+     }
+    }
+   }
+  },
+  "Laboratory": {
+   "games": 80,
+   "win": 0.9125,
+   "bought_in": 0.7625,
+   "copies_bought": 2.9125,
+   "plays_per_game": 17.2875,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.9,
+    "plays_per_game": 23.0125,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Library": {
+   "games": 80,
+   "win": 0.86875,
+   "bought_in": 0.225,
+   "copies_bought": 0.4375,
+   "plays_per_game": 1.2,
+   "asks_answered": {
+    "Library skip": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.6125,
+    "plays_per_game": 6.6125,
+    "asks_answered": {
+     "Library skip": true
+    },
+    "errors": 0,
+    "answers": {
+     "Library skip": {
+      "stop": 541,
+      "Poacher": 69,
+      "Library": 62,
+      "Market": 57,
+      "Sentry": 56,
+      "Cellar": 32,
+      "Throne Room": 26,
+      "Festival": 25,
+      "Vassal": 25,
+      "Militia": 23,
+      "Moat": 22,
+      "Village": 22,
+      "Chapel": 20,
+      "Witch": 13,
+      "Artisan": 13,
+      "Bandit": 11,
+      "Remodel": 9,
+      "Harbinger": 7,
+      "Merchant": 7,
+      "Smithy": 6,
+      "Workshop": 6,
+      "Moneylender": 5,
+      "Laboratory": 4,
+      "Bureaucrat": 1
+     }
+    }
+   }
+  },
+  "Market": {
+   "games": 80,
+   "win": 0.9,
+   "bought_in": 0.8875,
+   "copies_bought": 3.9375,
+   "plays_per_game": 18.5,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.73125,
+    "plays_per_game": 22.6875,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Merchant": {
+   "games": 80,
+   "win": 0.85,
+   "bought_in": 0.3875,
+   "copies_bought": 1.35,
+   "plays_per_game": 9.6375,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.6375,
+    "plays_per_game": 22.25,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Militia": {
+   "games": 80,
+   "win": 0.8625,
+   "bought_in": 0.85,
+   "copies_bought": 1.5,
+   "plays_per_game": 8.7375,
+   "asks_answered": {},
+   "as_victim_answered": {
+    "Militia discard": true
+   },
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7875,
+    "plays_per_game": 13.575,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {
+     "Militia discard": {
+      "Copper": 183,
+      "Estate": 175,
+      "Militia": 44,
+      "Province": 43,
+      "Chapel": 27,
+      "Silver": 17,
+      "Festival": 12,
+      "Village": 11,
+      "Vassal": 7,
+      "Merchant": 7,
+      "Gold": 6,
+      "Market": 4,
+      "Throne Room": 4,
+      "Duchy": 4,
+      "Remodel": 4,
+      "Artisan": 3,
+      "Sentry": 3,
+      "Laboratory": 3,
+      "Harbinger": 3,
+      "Cellar": 2,
+      "Bandit": 1,
+      "Smithy": 1,
+      "Poacher": 1
+     }
+    }
+   }
+  },
+  "Mine": {
+   "games": 80,
+   "win": 0.8875,
+   "bought_in": 0.05,
+   "copies_bought": 0.075,
+   "plays_per_game": 0.0375,
+   "asks_answered": {
+    "Mine trash": false,
+    "Mine gain": false
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.65,
+    "plays_per_game": 3.875,
+    "asks_answered": {
+     "Mine trash": true,
+     "Mine gain": true
+    },
+    "errors": 0,
+    "answers": {
+     "Mine trash": {
+      "Copper": 183,
+      "Silver": 111,
+      "Gold": 29,
+      "stop": 12
+     },
+     "Mine gain": {
+      "Silver": 194,
+      "Gold": 124,
+      "Copper": 5
+     }
+    }
+   }
+  },
+  "Moat": {
+   "games": 80,
+   "win": 0.90625,
+   "bought_in": 0.4375,
+   "copies_bought": 0.8625,
+   "plays_per_game": 4.2,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.61875,
+    "plays_per_game": 14.625,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Moneylender": {
+   "games": 80,
+   "win": 0.8875,
+   "bought_in": 0.1625,
+   "copies_bought": 0.225,
+   "plays_per_game": 0.675,
+   "asks_answered": {
+    "Moneylender trash": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.68125,
+    "plays_per_game": 5.925,
+    "asks_answered": {
+     "Moneylender trash": true
+    },
+    "errors": 0,
+    "answers": {
+     "Moneylender trash": {
+      "Copper": 352,
+      "stop": 1
+     }
+    }
+   }
+  },
+  "Poacher": {
+   "games": 80,
+   "win": 0.9125,
+   "bought_in": 0.7625,
+   "copies_bought": 1.65,
+   "plays_per_game": 12.8125,
+   "asks_answered": {
+    "Poacher discard": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.79375,
+    "plays_per_game": 20.5125,
+    "asks_answered": {
+     "Poacher discard": true
+    },
+    "errors": 0,
+    "answers": {
+     "Poacher discard": {
+      "Province": 50,
+      "Curse": 26,
+      "Copper": 21,
+      "Estate": 21,
+      "Duchy": 19,
+      "Silver": 17,
+      "Poacher": 17,
+      "Chapel": 13,
+      "Gardens": 11,
+      "Vassal": 9,
+      "Bandit": 6,
+      "Witch": 5,
+      "Village": 4,
+      "Laboratory": 3,
+      "Market": 3,
+      "Cellar": 3,
+      "Sentry": 2,
+      "Throne Room": 2,
+      "Merchant": 1,
+      "Gold": 1,
+      "Festival": 1
+     }
+    }
+   }
+  },
+  "Remodel": {
+   "games": 80,
+   "win": 0.825,
+   "bought_in": 0.5375,
+   "copies_bought": 0.625,
+   "plays_per_game": 3.0875,
+   "asks_answered": {
+    "Remodel trash": true,
+    "Remodel gain": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7625,
+    "plays_per_game": 7.675,
+    "asks_answered": {
+     "Remodel trash": true,
+     "Remodel gain": true
+    },
+    "errors": 0,
+    "answers": {
+     "Remodel trash": {
+      "Estate": 165,
+      "Gold": 90,
+      "Silver": 79,
+      "Remodel": 68,
+      "Copper": 47,
+      "Curse": 35,
+      "Chapel": 32,
+      "Province": 23,
+      "Artisan": 11,
+      "Moat": 11,
+      "Laboratory": 7,
+      "Bandit": 7,
+      "Vassal": 6,
+      "Cellar": 5,
+      "Festival": 3,
+      "Moneylender": 2,
+      "Workshop": 2,
+      "Harbinger": 2,
+      "Sentry": 2,
+      "Village": 1,
+      "Bureaucrat": 1,
+      "Duchy": 1,
+      "Militia": 1,
+      "Smithy": 1,
+      "Poacher": 1
+     },
+     "Remodel gain": {
+      "Province": 125,
+      "Silver": 45,
+      "Poacher": 42,
+      "Copper": 42,
+      "Moat": 38,
+      "Throne Room": 35,
+      "Laboratory": 34,
+      "Gold": 32,
+      "Cellar": 31,
+      "Village": 31,
+      "Sentry": 25,
+      "Duchy": 24,
+      "Estate": 20,
+      "Market": 19,
+      "Vassal": 18,
+      "Gardens": 17,
+      "Chapel": 16,
+      "Bandit": 14,
+      "Harbinger": 12,
+      "Witch": 12,
+      "Artisan": 11,
+      "Festival": 10,
+      "Militia": 8,
+      "Merchant": 7,
+      "Remodel": 3,
+      "Bureaucrat": 3,
+      "Moneylender": 2,
+      "Curse": 2,
+      "Library": 1,
+      "Council Room": 1,
+      "Smithy": 1
+     }
+    }
+   }
+  },
+  "Sentry": {
+   "games": 80,
+   "win": 0.9625,
+   "bought_in": 0.8625,
+   "copies_bought": 2.1625,
+   "plays_per_game": 16.35,
+   "asks_answered": {
+    "Sentry card": true,
+    "Sentry top": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.9375,
+    "plays_per_game": 18.3,
+    "asks_answered": {
+     "Sentry card": true,
+     "Sentry top": true
+    },
+    "errors": 0,
+    "answers": {
+     "Sentry card": {
+      "discard": 1396,
+      "keep": 1066,
+      "trash": 763
+     },
+     "Sentry top": {
+      "Sentry": 61,
+      "Vassal": 31,
+      "Silver": 23,
+      "Market": 20,
+      "Merchant": 12,
+      "Gold": 12,
+      "Laboratory": 10,
+      "Throne Room": 10,
+      "Witch": 10,
+      "Festival": 10,
+      "Poacher": 8,
+      "Village": 7,
+      "Militia": 7,
+      "Artisan": 3,
+      "Smithy": 2,
+      "Copper": 1,
+      "Remodel": 1,
+      "Library": 1,
+      "Bandit": 1
+     }
+    }
+   }
+  },
+  "Smithy": {
+   "games": 80,
+   "win": 0.9125,
+   "bought_in": 0.25,
+   "copies_bought": 0.5375,
+   "plays_per_game": 3.425,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7375,
+    "plays_per_game": 13.4875,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Throne Room": {
+   "games": 80,
+   "win": 0.9125,
+   "bought_in": 0.45,
+   "copies_bought": 1.1625,
+   "plays_per_game": 6.575,
+   "asks_answered": {
+    "Throne Room": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.73125,
+    "plays_per_game": 17.225,
+    "asks_answered": {
+     "Throne Room": true
+    },
+    "errors": 0,
+    "answers": {
+     "Throne Room": {
+      "Vassal": 281,
+      "Throne Room": 228,
+      "Market": 158,
+      "Sentry": 145,
+      "Laboratory": 124,
+      "Moat": 82,
+      "Artisan": 64,
+      "Poacher": 59,
+      "Village": 55,
+      "Militia": 52,
+      "Bandit": 49,
+      "Witch": 46,
+      "Smithy": 38,
+      "Festival": 37,
+      "Chapel": 36,
+      "stop": 34,
+      "Merchant": 31,
+      "Council Room": 18,
+      "Cellar": 18,
+      "Harbinger": 14,
+      "Remodel": 12,
+      "Workshop": 12,
+      "Library": 9,
+      "Moneylender": 4,
+      "Bureaucrat": 1
+     }
+    }
+   }
+  },
+  "Vassal": {
+   "games": 80,
+   "win": 0.86875,
+   "bought_in": 0.6,
+   "copies_bought": 2.55,
+   "plays_per_game": 10.425,
+   "asks_answered": {
+    "Vassal play": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7375,
+    "plays_per_game": 16.325,
+    "asks_answered": {
+     "Vassal play": true
+    },
+    "errors": 0,
+    "answers": {
+     "Vassal play": {
+      "Vassal": 289,
+      "Market": 115,
+      "Sentry": 112,
+      "Village": 108,
+      "stop": 70,
+      "Throne Room": 65,
+      "Laboratory": 56,
+      "Festival": 53,
+      "Chapel": 37,
+      "Artisan": 34,
+      "Poacher": 32,
+      "Militia": 28,
+      "Witch": 16,
+      "Smithy": 14,
+      "Cellar": 13,
+      "Workshop": 9,
+      "Remodel": 8,
+      "Moat": 8,
+      "Merchant": 8,
+      "Council Room": 6,
+      "Bandit": 6,
+      "Harbinger": 4,
+      "Library": 4,
+      "Mine": 2,
+      "Moneylender": 1,
+      "Bureaucrat": 1
+     }
+    }
+   }
+  },
+  "Village": {
+   "games": 80,
+   "win": 0.88125,
+   "bought_in": 0.7125,
+   "copies_bought": 2.8875,
+   "plays_per_game": 21.0875,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.7625,
+    "plays_per_game": 35.0125,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Witch": {
+   "games": 80,
+   "win": 0.8125,
+   "bought_in": 0.6375,
+   "copies_bought": 0.8625,
+   "plays_per_game": 5.45,
+   "asks_answered": {},
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.79375,
+    "plays_per_game": 8.2875,
+    "asks_answered": {},
+    "errors": 0,
+    "answers": {}
+   }
+  },
+  "Workshop": {
+   "games": 80,
+   "win": 0.85,
+   "bought_in": 0.1625,
+   "copies_bought": 0.525,
+   "plays_per_game": 0.8,
+   "asks_answered": {
+    "Workshop gain": true
+   },
+   "as_victim_answered": {},
+   "errors": 0,
+   "capped": 0,
+   "forced": {
+    "win": 0.69375,
+    "plays_per_game": 9.9,
+    "asks_answered": {
+     "Workshop gain": true
+    },
+    "errors": 0,
+    "answers": {
+     "Workshop gain": {
+      "Gardens": 141,
+      "Silver": 120,
+      "Village": 108,
+      "Estate": 99,
+      "Vassal": 87,
+      "Throne Room": 79,
+      "Poacher": 53,
+      "Smithy": 50,
+      "Militia": 40,
+      "Merchant": 39,
+      "Harbinger": 29,
+      "Workshop": 21,
+      "Moat": 16,
+      "Remodel": 16,
+      "Chapel": 10,
+      "Copper": 4,
+      "Cellar": 4,
+      "Bureaucrat": 4,
+      "Moneylender": 3,
+      "Curse": 2
+     }
+    }
+   }
+  }
+ },
+ "problems": [],
+ "note": "kingdom = the card + 9 random others; opponent the GA base genome; both seats"
+}
