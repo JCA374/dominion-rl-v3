@@ -1,0 +1,7 @@
+[
+  "Run c1: 2,363 iterations in 28 h; best verified 71.0% head to head vs rl-v1's champion (1,000 fresh games, iteration 2225); goal 55% first met at iteration 375.",
+  "The run was stopped by the out-of-memory killer at 13:04 on 20 Nov; training now runs as a systemd user service.",
+  "Card analysis, 64,000 games vs 8 opponents: no card it cannot manage; worst cards cost 3-4 points, and Library and Moat cost the champion as much.",
+  "Paired with the champion on the same games: Chapel +10, Village +5, Festival +4 points (card school); Sentry and Gardens -5, Militia -3.",
+  "Run c2: card drill on 10 weak cards in 30% of games, same league, learning rate 3e-4 to 2e-4."
+]
