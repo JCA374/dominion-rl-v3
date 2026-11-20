@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn from the model</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<main>
+<h1>Learn from the model</h1>
+<p class="lede">How to use the Play page, then what the strongest network does, measured in its own games, and a quiz:
+guess its move, see how sure it was.</p>
+<p><a class="big" style="display:inline-block;text-align:center;text-decoration:none" href="game.html#learn">Practise with suggestions on →</a></p>
+
+<h2>1. The Play page in one minute</h2>
+<ol class="steps">
+  <li><b>Pick an opponent and start.</b> The first game downloads Python for the browser (about 10 MB, once). Big Money is
+    the easy one; the rl-v3 network is the strongest.</li>
+  <li><b>Answer at the bottom.</b> The bar at the bottom of the screen always says what you are deciding. To buy, tap a
+    green card in the supply; to play an action or answer an attack, tap a green card in your hand or a button. Treasures
+    are played for you.</li>
+  <li><b>Win probability</b> (Settings ⚙, on by default): the advisor network's chance that you win, from your seat, at each
+    of your decisions, with a small graph of the game so far. Watch it move after your buys.</li>
+  <li><b>Suggestion</b> (Settings ⚙, off by default): the advisor's favourite answers with its probabilities, a ★ on the
+    board and a gold-edged button. Turn it on to learn, off to test yourself.</li>
+  <li><b>Take back</b> (Settings ⚙): undo your last move and try the other one. The opponent is deterministic, so you see
+    exactly what would have changed.</li>
+  <li><b>Review</b>: after the game, the moves where the model would have chosen differently, with your win chance at the
+    time.</li>
+</ol>
+<p class="muted small">The page's behaviour (defaults, which network advises, when to ask before ending a turn, the review)
+is set in one file, <code>play/spec.json</code>; Settings → Game spec shows it.</p>
+
+<h2>2. What the model does</h2>
+<p class="muted" id="src"></p>
+<div class="lessons" id="lessons"></div>
+
+<h2>3. Quiz: what would the model buy?</h2>
+<p class="muted">Positions from its games where it had a clear favourite and a tempting second choice. You sit in the model's seat:
+"You" is its deck, "Them" its opponent's.</p>
+<div class="lesson2 quiz" id="quiz"></div>
+</main>
+<script src="site.js"></script>
+<script src="common.js"></script>
+<script src="learn.js"></script>
+</body>
+</html>

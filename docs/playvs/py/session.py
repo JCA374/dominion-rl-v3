@@ -13,6 +13,8 @@ from dominion_engine.cards import CARDS, NAME, NUM_CARDS
 from dominion_engine.game import (KIND_NAME, SENTRY_CARD, SENTRY_DISCARD, SENTRY_KEEP, SENTRY_TRASH, Game)
 from dominion_engine import rules
 
+import numpy as np
+
 import rlplay
 
 SENTRY_LABEL = {SENTRY_TRASH: "Trash it", SENTRY_DISCARD: "Discard it", SENTRY_KEEP: "Keep it on top"}
@@ -24,7 +26,16 @@ def kingdom_random(seed: int) -> list[str]:
 
 
 class Session:
-    def __init__(self, kingdom, seed, opponent, flat=None, human=0):
+    def __init__(self, kingdom, seed, opponent, flat=None, human=0, advisor=None):
+        """advisor: flat weights of a net that judges the person's position (win probability) and suggests a move
+        at each of their decisions; it never plays. answers: every answer the person gave (take back = replay)."""
+        self._init = (list(kingdom), seed, opponent, flat, human)
+        self.adv = rlplay.Net(np.asarray(advisor, np.float32)) if advisor is not None else None
+        self._adv_flat = advisor
+        self.answers = []
+        self.review = []                              # per decision of the person: what the advisor thought
+        self.wp = []                                  # [turn, win probability] at each decision of the person
+        self._advice = None
         self.k = list(kingdom)
         self.human = human
         self.g = Game(self.k, seed)
@@ -127,9 +138,55 @@ class Session:
         assert self.d is not None
         d = self.d
         assert a in d.options or (a == -1 and d.may_pass), (a, d)
+        adv = self.advice()
+        if adv:
+            p = dict((o, q) for o, q in adv["probs"])
+            self.review.append({"turn": self.g.players[self.human].turns + 1, "kind": KIND_NAME[d.kind],
+                                "subject": NAME[d.subject] if 0 <= d.subject < NUM_CARDS else None,
+                                "chose": self._label(d, a), "p_chose": p.get(a, 0.0),
+                                "best": self._label(d, adv["probs"][0][0]), "p_best": adv["probs"][0][1],
+                                "win": adv["win"]})
+        self.answers.append(a)
         self._say(self.human, d, a)
         self.d = None
+        self._advice = None
         self._advance(a)
+        return self.view()
+
+    def _label(self, d, o):
+        if o == -1:
+            return "pass"
+        return SENTRY_LABEL[o] if d.kind == SENTRY_CARD else NAME[o]
+
+    def advice(self):
+        """The advisor on the person's current decision: its win probability for them and its probability for every
+        answer (best first; -1 = pass). None without an advisor or a decision. Cached until the next answer."""
+        if self.adv is None or self.d is None:
+            return None
+        if self._advice is None:
+            d = self.d
+            lg, v = self.adv.forward(rlplay.features(self.g, self.human, d.kind, d.subject, self.adv.nf > rlplay.NF0))
+            opts = list(d.options) + ([rlplay.PASS] if d.may_pass else [])
+            legal = np.array(opts)
+            z = lg[legal] - lg[legal].max()
+            pr = np.exp(z) / np.exp(z).sum()
+            probs = sorted(((-1 if o == rlplay.PASS else int(o), float(q)) for o, q in zip(opts, pr)), key=lambda t: -t[1])
+            win = (v + 1) / 2
+            self._advice = {"win": win, "probs": probs}
+            turn = self.g.players[self.human].turns + 1
+            if not self.wp or self.wp[-1][0] != turn:
+                self.wp.append([turn, win])
+        return self._advice
+
+    def undo(self, n: int = 1):
+        """Take back the person's last n answers: replay the game from the start (engine and nets are deterministic)."""
+        keep = self.answers[:max(0, len(self.answers) - n)]
+        k, seed, opponent, flat, human = self._init
+        fresh = Session(k, seed, opponent, flat, human, self._adv_flat)
+        for a in keep:
+            fresh.advice()
+            fresh.answer(a)
+        self.__dict__.update(fresh.__dict__)
         return self.view()
 
     def _thinking(self):
@@ -184,4 +241,6 @@ class Session:
             "coins": g.coins if mine else None, "actions": g.actions if mine else None,
             "buys": g.buys if mine else None, "trash": counts(g.trash),
             "thinking": self._thinking(),
+            "advice": self.advice(), "wp": self.wp, "review": self.review if self.result is not None else None,
+            "answers": len(self.answers),
         })

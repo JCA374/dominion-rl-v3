@@ -1,0 +1,58 @@
+{
+ "_about": "How the Play page's game behaves. Edit this file (play/spec.json); the publisher copies it to docs/playvs/spec.json and the page reads it at start. The page shows it under Settings → Game spec. A viewer's own switches (Settings) override the 'toggles' defaults on their device.",
+
+ "advisor": "c1_net_2300.npy",
+
+ "toggles": {
+  "win_probability": true,
+  "suggestion": false,
+  "opponent_thinking": false
+ },
+
+ "suggestion": {
+  "show_top": 3,
+  "mark_on_board": true
+ },
+
+ "start": {
+  "opponent": 0,
+  "seat": "random",
+  "kingdom": "random"
+ },
+
+ "turn": {
+  "confirm_end_turn_from_coins": 3,
+  "show_their_turn": true
+ },
+
+ "take_back": {
+  "enabled": true
+ },
+
+ "review": {
+  "enabled": true,
+  "min_gap": 0.25,
+  "show": 8
+ },
+
+ "log_lines": 40,
+
+ "about": {
+  "advisor": "The network (a file in docs/playvs/models/) that estimates your win probability and suggests moves. It never plays. If the file is missing, the strongest listed opponent is used.",
+  "toggles.win_probability": "Default for the win-probability bar: the advisor's chance that you win, from your seat, at each of your decisions, with a small graph of the game so far.",
+  "toggles.suggestion": "Default for suggestions: the advisor's favourite answers to your current decision, with its probabilities. Off by default, so a first game is your own.",
+  "toggles.opponent_thinking": "Default for showing what the opponent network considered on its last decision.",
+  "suggestion.show_top": "How many answers the suggestion lists (best first).",
+  "suggestion.mark_on_board": "Also put a star on the suggested card in the supply or your hand.",
+  "start.opponent": "Which opponent is selected at first: the position in docs/playvs/models.json (0 = the strongest).",
+  "start.seat": "Which seat you take at first: first, second or random.",
+  "start.kingdom": "random, or a list of 10 kingdom card names to always play that kingdom.",
+  "turn.confirm_end_turn_from_coins": "Ask before ending a buy phase with at least this many coins unspent (0 = never ask).",
+  "turn.show_their_turn": "Show a summary of the opponent's last turn at the top of the board.",
+  "take_back.enabled": "Allow taking back your last move (the game is replayed from the start; the opponent is deterministic).",
+  "review.enabled": "After the game, list the moves where the advisor would have chosen differently.",
+  "review.min_gap": "Only list a move when the advisor's favourite was at least this much more likely than your choice (0.25 = 25 points).",
+  "review.show": "At most this many moves in the review (largest gaps first).",
+  "log_lines": "How many lines the game log keeps on screen."
+ }
+}

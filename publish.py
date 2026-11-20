@@ -43,7 +43,7 @@ REPLAY_KINDS = set(CFG.get('replay_kinds', ['goal_best', 'stage_pass', 'goal_che
 MODEL = os.path.join(DOCS, 'model')
 # Tab order and default labels. index.html is the Overview when log.html exists, else (older projects) the Log.
 TAB_ORDER = [('index.html', 'Overview'), ('log.html', 'Log'), ('training.html', 'Training'), ('curriculum.html', 'Curriculum'),
-             ('senses.html', 'How it sees'), ('inputs.html', None), ('model.html', 'The model'), ('chains.html', 'Chains'), ('cards.html', 'Cards'), ('play.html', 'Play'),
+             ('senses.html', 'How it sees'), ('inputs.html', None), ('model.html', 'The model'), ('chains.html', 'Chains'), ('cards.html', 'Cards'), ('play.html', 'Play'), ('learn.html', 'Learn'),
              ('speed.html', 'Speed'), ('study.html', 'Study'), ('lessons.html', 'Lessons'), ('podcast/index.html', 'Podcast')]
 
 

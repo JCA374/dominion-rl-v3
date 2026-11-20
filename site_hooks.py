@@ -447,6 +447,7 @@ def playvs_files(docs_dir):
         shutil.copyfile(os.path.join(ROOT, "engine", "dominion_engine", f), os.path.join(out, "py", "dominion_engine", f))
     for f in ("rlplay.py", "session.py"):
         shutil.copyfile(os.path.join(ROOT, "play", f), os.path.join(out, "py", f))
+    shutil.copyfile(os.path.join(ROOT, "play", "spec.json"), os.path.join(out, "spec.json"))   # the game page's settings
     nets = _nets()
     its = {int(p.split("_")[-1][:-4]): p for p in nets}
     newest = max((i for i in its if i % 100 == 0), default=None)   # moves every 100 iterations (files are committed)
