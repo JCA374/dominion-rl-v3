@@ -211,5 +211,6 @@
   "runs/*/config.json",
   "runs/*/curriculum.json"
  ],
- "main_run": "c1"
+ "main_run": "c1",
+ "best_column": "eval_champion"
 }

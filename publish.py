@@ -248,6 +248,11 @@ def build():
         best_key = CFG.get('best_event', 'goal_best')
         best = max((e['check'] for e in events if e['kind'] == best_key and isinstance(e.get('check'), dict)), default=None,
                    key=lambda c: c.get('landed', c.get('score', 0)))
+        col, metric = CFG.get('best_column'), CFG.get('goal', {}).get('metric')   # the goal metric as a stats.csv column
+        vals = [(float(r[col]), r.get('iter')) for r in rows if col and (r.get(col) or 'nan') != 'nan']
+        if vals and (best is None or metric not in best):
+            v, it = max(vals)
+            best = {metric: v, 'iter': it}
         runs.append({'run': name, 'note': (cur or {}).get('note', ''), 'alive': alive, 'last': rows[-1] if rows else {},
                      'n_stages': len((cur or {}).get('stages', [])), 'best_goal': best,
                      'passed': [e['stage'] for e in events if e['kind'] == 'stage_pass']})
