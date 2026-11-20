@@ -145,3 +145,4 @@ body.game nav.top { display: none; }
 .grp .gl { font-size: .72rem; color: var(--muted); margin: 0 0 3px 2px; }
 .tiles { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
 @media (max-width: 480px) { .tiles, .tiles.base { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g-top a[href="learn.html"] { display: none; } }
+.btns button.undo { color: var(--accent); border-color: var(--accent); background: var(--panel); }

@@ -286,12 +286,14 @@
     }
     const btn = (o) => `<button data-a="${o.id}" class="${bestIds.has(o.id) ? 'best' : ''}">${h(o.label)}${pOf.has(o.id) ? `<span class="p">${P(pOf.get(o.id))}</span>` : ''}</button>`;
     const pass = q.may_pass ? `<button class="pass ${bestIds.has(-1) ? 'best' : ''}" data-a="-1">${h(passTxt || 'Pass')}${pOf.has(-1) ? `<span class="p">${P(pOf.get(-1))}</span>` : ''}</button>` : '';
+    const undo = spec.take_back.enabled && v.answers > 0 ? '<button class="undo" id="g-undo-btn" aria-label="Undo your last move">↶ Undo</button>' : '';
     const hint = SUPPLY_KINDS.has(q.kind) ? 'Tap a green card above' : HAND_KINDS.has(q.kind) ? 'or tap a green card in your hand' : '';
     el('g-sheet-in').innerHTML = `<div class="q"><span>${h(head)}</span>${q.kind === 'buy' ? `<span class="res"><b>$${v.coins}</b> · ${v.buys} buy${v.buys > 1 ? 's' : ''}</span>` : ''}
         <span class="muted small">${hint}</span></div>
       ${best.length ? `<div class="sugg">The model suggests: ${best.map(([id, p], i) => `${i ? '' : '<b>'}${h(label(q, id))} ${P(p)}${i ? '' : '</b>'}`).join(' · ')}</div>` : ''}
-      <div class="btns">${buttons.map(btn).join('')}${pass}</div>`;
+      <div class="btns">${undo}${buttons.map(btn).join('')}${pass}</div>`;
     el('g-sheet-in').querySelectorAll('button[data-a]').forEach((b) => { b.onclick = () => answer(+b.dataset.a); });
+    if (el('g-undo-btn')) el('g-undo-btn').onclick = () => act(() => S.undo(1));
   }
 
   function resultPane(r) {
