@@ -741,6 +741,38 @@
      "coin_regret": 0.2568430006504059
     }
    }
+  },
+  "rl-v3 (iteration 2000)": {
+   "n": 14243,
+   "right": 0.8979147651477919,
+   "coin_regret": 0.1468690186738968,
+   "by_type": {
+    "+Actions and terminals": {
+     "n": 3870,
+     "right": 0.8421188630490956,
+     "coin_regret": 0.2863445580005646
+    },
+    "+Actions cards only": {
+     "n": 5014,
+     "right": 0.8797367371360192,
+     "coin_regret": 0.0996665433049202
+    },
+    "Throne Room in hand": {
+     "n": 276,
+     "right": 0.7427536231884058,
+     "coin_regret": 0.2935068905353546
+    },
+    "one terminal (play it or not)": {
+     "n": 4155,
+     "right": 0.9819494584837545,
+     "coin_regret": 0.03409081697463989
+    },
+    "terminal collision": {
+     "n": 928,
+     "right": 0.8987068965517241,
+     "coin_regret": 0.2815932035446167
+    }
+   }
   }
  },
  "champion_misses": [
@@ -998,5 +1030,5 @@
    }
   }
  ],
- "t": "2026-11-20 06:57"
+ "t": "2026-11-20 08:18"
 }

@@ -1,8 +1,8 @@
 [
  {
-  "label": "rl-v3 (iteration 1900)",
-  "name": "rl-v3 (iteration 1900)",
-  "file": "c1_net_1900.npy",
+  "label": "rl-v3 (iteration 2000)",
+  "name": "rl-v3 (iteration 2000)",
+  "file": "c1_net_2000.npy",
   "note": "The newest rl-v3 network: rl-v1's champion trained on, with the helper inputs and the card school. The strongest."
  },
  {
