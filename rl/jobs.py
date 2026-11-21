@@ -24,11 +24,14 @@ def _params(path):
 
 
 def _seat(spec: dict, kingdom, sample=False, record=False):
-    """spec: {"kind": "ga"} | {"kind": "bot", "name"} | {"kind": "net", "path"} | {"kind": "az", "path", "sims"}"""
+    """spec: {"kind": "ga"} (old GA base) | {"kind": "ga2"} (new GA base) | {"kind": "bot", "name"} | {"kind": "net", "path"} | {"kind": "az", "path", "sims"}"""
     g = base_genome(kingdom)["ints"]
     k = spec["kind"]
     if k == "ga":
         return Seat(GA, g, record=record)
+    if k == "ga2":                                # the new GA base (2026-11-21): az-v1 base_genome_v2
+        from az.base import base_genome_v2
+        return Seat(GA, base_genome_v2(kingdom)["ints"], record=record)
     if k == "bot":
         return Seat(GA, bot(spec["name"], kingdom))
     if k == "az":

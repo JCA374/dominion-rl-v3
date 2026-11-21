@@ -455,7 +455,7 @@ def playvs_files(docs_dir):
     if newest:
         pick.append((f"rl-v3 (iteration {newest})", its[newest], "The newest rl-v3 network: rl-v1's champion trained on, with the helper inputs and the card school. The strongest."))
     pick.append(("rl-v1 champion", os.path.join("opponents", "rl_r2_2200.npy"),
-                 "rl-v1 r2 at iteration 2,200: started as a copy of the GA genome, then PPO. 82.8% against the GA base. Hard."))
+                 "rl-v1 r2 at iteration 2,200: started as a copy of the GA genome, then PPO. 77.5% against the new GA base (81.6% against the old one). Hard."))
     pick.append(("rl-v2 from zero", os.path.join("opponents", "rl_v2_z1h_1100.npy"),
                  "Learned from random weights by self-play only: money, Witch and Militia; few engines. Medium."))
     models, keep = [], set()
