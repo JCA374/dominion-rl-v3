@@ -9,7 +9,7 @@
   "label": "rl-v1 champion",
   "name": "rl-v1 champion",
   "file": "rl_r2_2200.npy",
-  "note": "rl-v1 r2 at iteration 2,200: started as a copy of the GA genome, then PPO. 82.8% against the GA base. Hard."
+  "note": "rl-v1 r2 at iteration 2,200: started as a copy of the GA genome, then PPO. 77.5% against the new GA base (81.6% against the old one). Hard."
  },
  {
   "label": "rl-v2 from zero",
