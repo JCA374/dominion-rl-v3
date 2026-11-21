@@ -1,5 +1,5 @@
 {
- "t": "2026-11-21 07:01",
+ "t": "2026-11-21 07:18",
  "kingdoms": 1000,
  "games": "1,000 fresh kingdoms, both seats; the same games against both bases",
  "old_base": "az-v1 base_genome: portfolio-v2, the best-vs-bots eligible member",
@@ -53,6 +53,30 @@
     "ci": [
      0.4196,
      0.4631
+    ],
+    "n": 2000
+   }
+  },
+  {
+   "label": "portfolio-v2 (the Steam autopilot's GA)",
+   "spec": {
+    "kind": "portfolio",
+    "name": "portfolio-v2"
+   },
+   "secs": 1035,
+   "vs_ga": {
+    "score": 0.561,
+    "ci": [
+     0.5392,
+     0.5826
+    ],
+    "n": 2000
+   },
+   "vs_ga2": {
+    "score": 0.5098,
+    "ci": [
+     0.4878,
+     0.5316
     ],
     "n": 2000
    }
