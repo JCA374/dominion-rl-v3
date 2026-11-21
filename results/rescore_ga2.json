@@ -1,0 +1,61 @@
+{
+ "t": "2026-11-21 07:01",
+ "kingdoms": 1000,
+ "games": "1,000 fresh kingdoms, both seats; the same games against both bases",
+ "old_base": "az-v1 base_genome: portfolio-v2, the best-vs-bots eligible member",
+ "new_base": "az-v1 base_genome_v2: portfolio-v3, round robin among the eligible members (100 seeds)",
+ "pick_counts": {
+  "v3-witch": 206,
+  "v3-gardens": 134,
+  "v3-poacher": 61,
+  "v3-merchant": 54,
+  "v3-market": 54,
+  "v3-generalist": 50,
+  "v3-smithy": 49,
+  "v3-vassal": 45,
+  "v3-remodel": 44,
+  "v3-council-room": 36,
+  "v3-artisan": 29,
+  "v3-festival": 22,
+  "v3-laboratory": 21,
+  "v3-sentry": 21,
+  "v3-mine": 18,
+  "v3-moneylender": 18,
+  "v3-militia": 18,
+  "v3-workshop": 18,
+  "v3-library": 17,
+  "v3-throne-room": 17,
+  "v3-harbinger": 16,
+  "v3-bureaucrat": 15,
+  "k4-20260614": 11,
+  "v3-chapel": 10,
+  "v3-cellar": 8,
+  "v3-bandit": 5,
+  "v3-village-smithy": 3
+ },
+ "models": [
+  {
+   "label": "GA base, old rule (portfolio-v2)",
+   "spec": {
+    "kind": "ga"
+   },
+   "secs": 2,
+   "vs_ga": {
+    "score": 0.5,
+    "ci": [
+     0.4781,
+     0.5219
+    ],
+    "n": 2000
+   },
+   "vs_ga2": {
+    "score": 0.4412,
+    "ci": [
+     0.4196,
+     0.4631
+    ],
+    "n": 2000
+   }
+  }
+ ]
+}
