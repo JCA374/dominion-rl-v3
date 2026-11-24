@@ -128,9 +128,9 @@ def test_two_runs_with_one_seed_write_identical_nets():
     try:
         for n in names:
             subprocess.run([sys.executable, "train.py", "--run", n, "--init_from", C2_PT, "--stage", "2", "--set", "games=40", "eval_kingdoms=2", "workers=2",
-                            "iterations=2", "goal_every=0", "seed=t", "frozen=c2:0.2", "chunk=10", "temp=0.8"],
+                            "iterations=4", "goal_every=0", "snapshot_every=2", "seed=t", "frozen=c2:0.2", "chunk=10", "temp=0.8"],
                            cwd=ROOT, check=True, capture_output=True)
-        a, b = (np.load(os.path.join(ROOT, "runs", n, "net_2.npy")) for n in names)
+        a, b = (np.load(os.path.join(ROOT, "runs", n, "net_4.npy")) for n in names)
         assert np.array_equal(a, b)
         ev = [json.loads(x) for x in open(os.path.join(ROOT, "runs", names[0], "events.jsonl"))]
         chk = [e for e in ev if e["kind"] == "init_check"][0]

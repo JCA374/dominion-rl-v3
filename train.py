@@ -431,7 +431,7 @@ def main():
             snaps = (snaps + [snap(it)])[-cfg["snapshots"]:]
         for old in range(max(0, it - 30), it - 2):          # keep snapshots, goal nets and the last two
             p = os.path.join(d, f"net_{old}.npy")
-            if old % cfg["snapshot_every"] and old % cfg["goal_every"] and os.path.exists(p):
+            if old % cfg["snapshot_every"] and (not cfg["goal_every"] or old % cfg["goal_every"]) and os.path.exists(p):
                 os.remove(p)
                 os.remove(p.replace(".npy", ".pt"))
         st = STAGES[stage]
