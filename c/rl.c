@@ -165,6 +165,7 @@ typedef struct {
     unsigned char *LEGAL;
     int *A, *SEAT, *TURN, *KIND;
     int max, n;
+    int overflow;                 /* a decision was not recorded: the buffer was full (rl_play reports it) */
 } rl_rec;
 static rl_rec *r_rec;
 static int *r_plan;               /* per record: the planner's choice (or -1 = not planned); rl_set_plan_buf */
@@ -174,7 +175,8 @@ void rl_set_plan_buf(int *plan, float *pval) { r_plan = plan; r_pval = pval; }
 
 static void rl_record(const de_game *g, int me, int kind, int subject, const int *ok, int a, float logp, float v) {
     rl_rec *r = r_rec;
-    if (!r || r->n >= r->max) return;
+    if (!r) return;
+    if (r->n >= r->max) { r->overflow = 1; return; }
     int k = r->n++;
     rl_features(g, me, kind, subject, r->X + (size_t)k * RL_NF);
     for (int i = 0; i < RL_NA; i++) r->LEGAL[(size_t)k * RL_NA + i] = (unsigned char)ok[i];
@@ -392,14 +394,15 @@ void rl_set_plan(int k0, int k1, int play0, int play1) {
 /* One game. Per seat i: mode[i], genome[i] (RL_GA; also the AZ agent's non-buy play), prm[i]
  * (RL_NET weights with nh[i] hidden units; or az-v1 net weights, nh 128, for RL_AZ), sample/record/temp (RL_NET),
  * az_sims (RL_AZ: 0 = its net's argmax, else IS-MCTS with this many simulations, leaf lam 0.5).
- * out: [winners mask, score0, score1, turns0, turns1, capped|error<<1]. Returns records written. */
+ * out: [winners mask, score0, score1, turns0, turns1, capped | error<<1 | record overflow<<2]. Returns records
+ * written. */
 int rl_play(const int *mode, const float *prm0, const float *prm1, const int *nh, const int *nf,
             const int *genome0, const int *genome1, const int *sample, const int *record,
             float temp, const int *az_sims, float az_lam, const int *kingdom, int kn,
             uint64_t seed, uint64_t rng_seed,
             float *X, unsigned char *LEGAL, int *A, float *LOGP, float *V, int *SEAT, int *TURN,
             int *KIND, int max_rec, int *out) {
-    rl_rec rec = {X, LOGP, V, LEGAL, A, SEAT, TURN, KIND, max_rec, 0};
+    rl_rec rec = {X, LOGP, V, LEGAL, A, SEAT, TURN, KIND, max_rec, 0, 0};
     r_rec = &rec;
     const float *prm[2] = {prm0, prm1};
     const int *genome[2] = {genome0, genome1};
@@ -424,7 +427,7 @@ int rl_play(const int *mode, const float *prm0, const float *prm1, const int *nh
     out[2] = de_score(&g, 1);
     out[3] = g.p[0].turns;
     out[4] = g.p[1].turns;
-    out[5] = g.capped | (g.error << 1);
+    out[5] = g.capped | (g.error << 1) | (rec.overflow << 2);
     r_rec = NULL;
     return rec.n;
 }

@@ -121,24 +121,26 @@ def set_planner(params) -> None:
 
 
 def play(seats, kingdom, seed, rng_seed=1, nh=256, temp=1.0, az_lam=0.5, trace=False, plan=(0, 0),
-         plan_play=(0, 0), force=(None, None)) -> dict:
+         plan_play=(0, 0), force=(None, None), max_rec=MAX_REC) -> dict:
     """nh is only a fallback: each NET seat's hidden size is read from its weights.
     plan: per seat, K determinisations for the turn planner at action decisions (0 = off); plan_play: per seat,
     1 = play the planner's choice, 0 = only label recorded decisions (rec PLAN, PVAL).
-    force: per seat, a card name for the card school (its first buys forced to 2 copies, not recorded) or None."""
+    force: per seat, a card name for the card school (its first buys forced to 2 copies, not recorded) or None.
+    max_rec: record buffer size; "overflow" in the result says decisions were dropped because it was full."""
+    assert temp > 0, "temperature must be positive (the PPO update divides the logits by the same value)"
     T = np.zeros((2000, TRACE_W), np.float32) if trace else None
     lib.az_set_trace(_fptr(T), 2000 if trace else 0)
     k = _ints([ID[c] for c in kingdom])
-    X = np.zeros((MAX_REC, NF), np.float32)
-    LEGAL = np.zeros((MAX_REC, NA), np.uint8)
-    A = np.zeros(MAX_REC, np.int32)
-    LOGP = np.zeros(MAX_REC, np.float32)
-    V = np.zeros(MAX_REC, np.float32)
-    SEAT = np.zeros(MAX_REC, np.int32)
-    TURN = np.zeros(MAX_REC, np.int32)
-    KIND = np.zeros(MAX_REC, np.int32)
-    PLAN = np.full(MAX_REC, -1, np.int32)
-    PVAL = np.full((MAX_REC, NA), np.nan, np.float32)
+    X = np.zeros((max_rec, NF), np.float32)
+    LEGAL = np.zeros((max_rec, NA), np.uint8)
+    A = np.zeros(max_rec, np.int32)
+    LOGP = np.zeros(max_rec, np.float32)
+    V = np.zeros(max_rec, np.float32)
+    SEAT = np.zeros(max_rec, np.int32)
+    TURN = np.zeros(max_rec, np.int32)
+    KIND = np.zeros(max_rec, np.int32)
+    PLAN = np.full(max_rec, -1, np.int32)
+    PVAL = np.full((max_rec, NA), np.nan, np.float32)
     lib.rl_set_plan(int(plan[0]), int(plan[1]), int(plan_play[0]), int(plan_play[1]))
     lib.rl_set_plan_buf(PLAN.ctypes.data_as(_I), _fptr(PVAL))
     lib.rl_set_force(ID[force[0]] if force[0] else -1, ID[force[1]] if force[1] else -1, 2, 6)
@@ -153,7 +155,7 @@ def play(seats, kingdom, seed, rng_seed=1, nh=256, temp=1.0, az_lam=0.5, trace=F
                     _ints([int(s.record) for s in seats]), temp, _ints([s.sims for s in seats]), az_lam,
                     k, len(kingdom), seed & (2**64 - 1), rng_seed & (2**64 - 1),
                     _fptr(X), LEGAL.ctypes.data_as(_U8), A.ctypes.data_as(_I), _fptr(LOGP), _fptr(V),
-                    SEAT.ctypes.data_as(_I), TURN.ctypes.data_as(_I), KIND.ctypes.data_as(_I), MAX_REC, out)
+                    SEAT.ctypes.data_as(_I), TURN.ctypes.data_as(_I), KIND.ctypes.data_as(_I), max_rec, out)
     lib.rl_set_plan(0, 0, 0, 0)
     lib.rl_set_plan_buf(None, None)
     lib.rl_set_force(-1, -1, 2, 6)
@@ -161,7 +163,7 @@ def play(seats, kingdom, seed, rng_seed=1, nh=256, temp=1.0, az_lam=0.5, trace=F
     tr = T[:lib.az_trace_count()] if trace else None
     lib.az_set_trace(None, 0)
     return {"trace": tr, "winners": [i for i in range(2) if mask >> i & 1], "scores": [out[1], out[2]],
-            "turns": [out[3], out[4]], "capped": bool(out[5] & 1), "error": bool(out[5] & 2),
+            "turns": [out[3], out[4]], "capped": bool(out[5] & 1), "error": bool(out[5] & 2), "overflow": bool(out[5] & 4),
             "rec": {"X": X[:n], "LEGAL": LEGAL[:n], "A": A[:n], "LOGP": LOGP[:n], "V": V[:n],
                     "SEAT": SEAT[:n], "TURN": TURN[:n], "KIND": KIND[:n],
                     "PLAN": PLAN[:n], "PVAL": PVAL[:n]}}

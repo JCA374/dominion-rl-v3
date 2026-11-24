@@ -19,3 +19,8 @@ turn planner that answered "does the network need a chain model?" (no: see READM
   `experiments/card_losses_report.py X --ref champion_ref` (same games with the champion; report to `docs/reports/`).
 - Podcast: project-podcast skill, `podcast.conf`. The voice studio's venv runs on uv's Python 3.12 (the OS moved to 3.14).
 - Never put personal names or home paths on the site, in commits or podcasts.
+- PPO fixes (2026-11-24, tests/test_ppo_fixes.py): the update divides the logits by cfg temp (as the C sampler does);
+  errored or record-overflowed games give no records (stats: rejected_error/overflow, capped_games, points_uncapped);
+  cfg seed = stream seed independent of the run name, ordered pool.imap, seeded minibatch shuffles (same seed ->
+  identical nets); cfg frozen ("c2:0.1,c1:0.1", FROZEN), eval_vs, exclude (shared kingdom exclusion manifest);
+  --init_from needs --stage and runs init_check (weights equal source, first PPO ratio 1). Logs games/updates/CPU hours.

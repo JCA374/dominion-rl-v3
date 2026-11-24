@@ -60,7 +60,11 @@ KEYS = ["X", "LEGAL", "A", "LOGP", "V", "KIND", "TURN", "ADV", "RET", "Z"]
 
 
 def ppo_chunk(job: dict) -> dict:
-    """job: games [{kingdom, seed, seat, opp}], learner path, nh, temp, lam."""
+    """job: games [{kingdom, seed, seat, opp}], learner path, nh, temp, lam.
+    A game the engine reports as errored, or whose records overflowed the buffer (a truncated trajectory: its GAE
+    would be wrong), gives no training records; its result is still returned, flagged, so the caller counts it."""
+    import time
+    t0 = time.process_time()
     parts, results = [], []
     for gm in job["games"]:
         k, seat = gm["kingdom"], gm["seat"]
@@ -71,7 +75,8 @@ def ppo_chunk(job: dict) -> dict:
         force = (gm.get("force"), gm.get("opp_force")) if seat == 0 else (gm.get("opp_force"), gm.get("force"))
         r = play(seats, k, gm["seed"], rng_seed=gm["seed"] * 31 + 7, nh=job["nh"], temp=job["temp"], force=force)
         rec = r["rec"]
-        for s in ([0, 1] if self_play else [seat]):
+        rejected = r["error"] or r.get("overflow", False)
+        for s in [] if rejected else [0, 1] if self_play else [seat]:
             m = rec["SEAT"] == s
             if not m.any():
                 continue
@@ -82,9 +87,11 @@ def ppo_chunk(job: dict) -> dict:
                           "Z": np.full(m.sum(), z, np.float32)})
         results.append({"opp": gm["opp"].get("tag", gm["opp"]["kind"]), "points": (outcome(r, seat) + 1) / 2,
                         "school": gm.get("force") if not gm.get("drill") else None, "drill": gm.get("drill"),
-                        "turns": max(r["turns"]), "capped": r["capped"]})
+                        "turns": max(r["turns"]), "capped": r["capped"], "error": r["error"],
+                        "overflow": r.get("overflow", False)})
     out = _concat(parts, KEYS)
     out["results"] = results
+    out["cpu"] = time.process_time() - t0
     return out
 
 
@@ -112,6 +119,8 @@ def bc_chunk(job: dict) -> dict:
 
 def eval_chunk(job: dict) -> list[dict]:
     """agent spec vs opponent spec per game, the agent playing its argmax."""
+    import time
+    t0 = time.process_time()
     out = []
     for gm in job["games"]:
         k, seat = gm["kingdom"], gm["seat"]
@@ -121,5 +130,7 @@ def eval_chunk(job: dict) -> list[dict]:
         r = play(seats, k, gm["seed"], rng_seed=gm["seed"] ^ 0x5EED, nh=job["nh"])
         out.append({"opp": gm["opp"].get("tag", gm["opp"]["kind"]), "points": (outcome(r, seat) + 1) / 2,
                     "margin": r["scores"][seat] - r["scores"][1 - seat], "turns": max(r["turns"]),
-                    "capped": r["capped"]})
+                    "capped": r["capped"], "error": r["error"]})
+    if out:
+        out[0]["cpu"] = time.process_time() - t0          # the chunk's CPU seconds ride on its first game
     return out

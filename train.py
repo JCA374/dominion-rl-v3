@@ -56,6 +56,10 @@ CFG = {
     "goal_every": 25,
     "vs_az_every": 100,      # goal checks with the 1,000 head-to-head games against az-v1's best (~3 min)
     "chunk": 50,
+    "seed": "",              # training stream seed; "" = the run name (c1, c2). Set it so two runs can share a stream
+    "frozen": "",            # frozen opponents and their shares before the stage's league, e.g. "c2:0.1,c1:0.1" (FROZEN)
+    "eval_vs": "",           # extra evaluation opponents from FROZEN, e.g. "c2,c1" (100 kingdoms x 2 seats each)
+    "exclude": "",           # JSON file of kingdoms never trained on ({"kingdoms": ["Card,Card,..."]}, sorted names)
 }
 BOTS = ["Big Money", "Smithy-BM", "Witch-BM"]
 AZ_NET = "opponents/az_r2_357.npy"
@@ -68,6 +72,8 @@ SCHOOL = ["Chapel", "Mine", "Library", "Moneylender", "Council Room", "Smithy", 
 CHAMPION = "opponents/rl_r2_2200.npy"                              # the best model before rl-v3
 RL_V2 = "opponents/rl_v2_z1h_1100.npy"                            # rl-v2's from-zero net (75% vs GA at its peak)
 INIT_CKPT = "opponents/rl_v1_r2_2219_ckpt.pt"                      # rl-v1 r2's last checkpoint: net + Adam state
+FROZEN = {"c2": "opponents/rl3_c2_2654.npy", "c1": "opponents/rl3_c1_2300.npy",   # rl-v3's frozen best two
+          "champion": CHAMPION}
 
 # Opponent shares per stage (the rest: the current net, both seats learning). gate: (eval key, level)
 # that ends the stage, or ("plateau", n): no new best against the GA base for n iterations (self-play
@@ -120,6 +126,13 @@ def eval_games(cfg):
         s = rng.getrandbits(32)
         games += [{"kingdom": k, "seed": s, "seat": seat, "opp": {"kind": "net", "path": CHAMPION, "tag": "champion"}}
                   for seat in (0, 1)]
+    for name in filter(None, cfg.get("eval_vs", "").split(",")):     # after the fixed games: they stay unchanged
+        r2 = random.Random(f"rl-v3 eval vs {name}")
+        for _ in range(cfg["eval_kingdoms"]):
+            k = random_kingdom(r2)
+            s = r2.getrandbits(32)
+            games += [{"kingdom": k, "seed": s, "seat": seat, "opp": {"kind": "net", "path": FROZEN[name],
+                                                                      "tag": f"vs {name}"}} for seat in (0, 1)]
     for b in BOTS:
         for _ in range(cfg["eval_kingdoms"] // 4):
             k = kingdom_for_bot(rng, b)
@@ -132,9 +145,9 @@ def eval_games(cfg):
 
 def run_eval(pool, cfg, agent):
     jobs = [{"games": c, "agent": agent, "nh": cfg["nh"]} for c in chunks(eval_games(cfg), cfg["chunk"])]
-    res = [r for part in pool.imap_unordered(_eval, jobs) for r in part]
-    out = {}
-    for tag in ["GA base", "champion"] + BOTS:
+    res = [r for part in pool.imap(_eval, jobs) for r in part]
+    out = {"cpu": float(sum(r.get("cpu", 0.0) for r in res)), "errors": int(sum(r.get("error", False) for r in res))}
+    for tag in ["GA base", "champion"] + BOTS + [f"vs {n}" for n in filter(None, cfg.get("eval_vs", "").split(","))]:
         pts = [r["points"] for r in res if r["opp"] == tag]
         out[tag] = float(np.mean(pts))
     out["bots"] = float(np.mean([out[b] for b in BOTS]))
@@ -170,9 +183,17 @@ class Log:
             w.writerow(row)
 
 
-def ppo_update(net, opt, data, cfg, torch):
-    """Clipped PPO on one iteration's decisions. Returns mean metrics."""
+def policy_logp(net, X, L, temp, torch):
+    """log pi(a|x) for all options at the sampling temperature: the C sampler draws from softmax(logits / temp) and
+    records that log probability, so the update must divide by the same temp (else the first ratio is already off)."""
+    logits, v = net(X, L)
+    return torch.log_softmax(logits / temp, -1), v
+
+
+def ppo_update(net, opt, data, cfg, torch, seed=None):
+    """Clipped PPO on one iteration's decisions. Returns mean metrics. seed: the minibatch shuffle's seed."""
     n = len(data["A"])
+    gen = torch.Generator().manual_seed(int(seed)) if seed is not None else None
     X = torch.from_numpy(data["X"])
     L = torch.from_numpy(data["LEGAL"]).bool()
     A = torch.from_numpy(data["A"]).long()
@@ -183,11 +204,10 @@ def ppo_update(net, opt, data, cfg, torch):
     stats = []
     stop = False
     for ep in range(cfg["epochs"]):
-        perm = torch.randperm(n)
+        perm = torch.randperm(n, generator=gen)
         for i in range(0, n, cfg["batch"]):
             j = perm[i:i + cfg["batch"]]
-            logits, v = net(X[j], L[j])
-            logp_all = torch.log_softmax(logits, -1)
+            logp_all, v = policy_logp(net, X[j], L[j], cfg["temp"], torch)
             logp = logp_all.gather(1, A[j][:, None]).squeeze(1)
             ratio = torch.exp(logp - OLD[j])
             s1 = ratio * ADV[j]
@@ -205,13 +225,14 @@ def ppo_update(net, opt, data, cfg, torch):
                 kl = (OLD[j] - logp).mean().item()
                 clipfrac = ((ratio - 1).abs() > cfg["clip"]).float().mean().item()
             stats.append({"pg_loss": pg.item(), "value_loss": vl.item(), "entropy": ent.item(), "kl": kl,
-                          "clipfrac": clipfrac})
+                          "clipfrac": clipfrac, "updates": 1})
             if kl > cfg["max_kl"]:
                 stop = True
                 break
         if stop:
             break
     out = {k: float(np.mean([s[k] for s in stats])) for k in stats[0]}
+    out["updates"] = len(stats)
     out["epochs_done"] = ep + 1
     return out
 
@@ -254,7 +275,7 @@ def main():
     ap.add_argument("--run", default="r1")
     ap.add_argument("--continue", dest="cont", action="store_true")
     ap.add_argument("--init_from", default=None)
-    ap.add_argument("--stage", type=int, default=0, help="with --init_from: the stage to start in (0-based)")
+    ap.add_argument("--stage", type=int, default=None, help="the stage to start in (0-based; required with --init_from)")
     ap.add_argument("--set", nargs="*", default=[])
     args = ap.parse_args()
     import torch
@@ -290,10 +311,14 @@ def main():
             g["lr"] = cfg["lr"]
         it, snaps = ck["iter"] + 1, ck["snaps"]
         stage, stage_start = ck.get("stage", 0), ck.get("stage_start", 1)
+        totals = ck.get("totals", {"games": 0, "updates": 0, "cpu_s": 0.0})
         log.event("run_resume", iter=it, stage=STAGES[stage]["name"])
     else:
         log.event("run_start", config=cfg, init_from=args.init_from)
+        totals = {"games": 0, "updates": 0, "cpu_s": 0.0}
         if args.init_from:
+            if args.stage is None:
+                raise SystemExit("--init_from needs an explicit --stage (0 home league, 1 champion, 2 open league)")
             net = load(args.init_from)
         elif os.path.exists(INIT_CKPT):
             net, opt_state = widen_ckpt(INIT_CKPT, cfg, torch)
@@ -323,15 +348,21 @@ def main():
             opt.load_state_dict(opt_state)
             for g in opt.param_groups:
                 g["lr"] = cfg["lr"]
+        if args.init_from:                         # step zero: the exported net is the source net, C and torch agree
+            log.event("init_check", **init_check(net, args.init_from, snap(0), cfg, pool, torch))
         e = run_eval(pool, cfg, {"kind": "net", "path": snap(0)})
         log.event("init_eval", eval=fmt(e))
         log.row(make_row(0, t0, {}, {}, e))
         it, snaps = 1, [snap(0)]
-        stage, stage_start = args.stage, 1
+        stage, stage_start = args.stage or 0, 1
         log.event("stage_start", stage=STAGES[stage]["name"], index=stage, iter=1, expect=STAGES[stage].get("expect", ""))
         torch.save({"net": net.state_dict(), "opt": opt.state_dict(), "iter": 0, "snaps": snaps,
-                    "stage": stage, "stage_start": stage_start}, os.path.join(d, "ckpt.pt"))
+                    "stage": stage, "stage_start": stage_start, "totals": totals}, os.path.join(d, "ckpt.pt"))
 
+    excluded = load_exclusions(cfg["exclude"])
+    if excluded:
+        log.event("exclusions", file=cfg["exclude"], kingdoms=len(excluded))
+    cpu0 = time.process_time()
     stage_best = [-1.0, it - 1]              # best eval vs GA within the current stage, and its iteration
     best_eval = [-1.0]
     if os.path.exists(os.path.join(d, "stats.csv")):
@@ -340,43 +371,12 @@ def main():
     while it <= cfg["iterations"]:
         ti = time.time()
         learner = snap(it - 1)
-        rng = random.Random(f"rl-v3 ppo {args.run} {it}")
-        shares = STAGES[stage]["shares"]
-        games = []
-        for i in range(cfg["games"]):
-            u, seat, opp = rng.random(), i % 2, None
-            for kind, share in shares.items():
-                if u < share:
-                    opp = pick_opponent(kind, i, rng, snaps)
-                    break
-                u -= share
-            if opp is None or (opp["kind"] == "net" and opp["path"] is None):
-                opp = {"kind": "net", "path": learner, "tag": "self"}
-            force = opp_force = drill = None
-            if opp["kind"] == "bot":
-                k = kingdom_for_bot(rng, opp["name"])
-            elif rng.random() < cfg["drill_share"]:
-                drill = DRILL_CARDS(cfg)[i % len(DRILL_CARDS(cfg))]
-                k = school_kingdom(rng, drill)
-                u2 = rng.random()
-                if u2 < 0.3:
-                    force = drill                                  # the learner plays it
-                elif u2 < 0.6 and opp["kind"] == "net":
-                    opp_force = drill                              # the learner plays against it
-            elif rng.random() < STAGES[stage].get("school", 0):
-                force = SCHOOL[i % len(SCHOOL)]
-                k = school_kingdom(rng, force)
-            elif rng.random() < cfg["focus_share"]:
-                k = focus_kingdom(rng, cfg["focus_exclude"].split(","))
-            else:
-                k = random_kingdom(rng)
-            games.append({"kingdom": k, "seed": rng.getrandbits(32), "seat": seat, "opp": opp, "force": force,
-                          "opp_force": opp_force, "drill": drill})
+        games = make_games(cfg, stage, it, args.run, snaps, learner, excluded)
         jobs = [{"games": c, "learner": learner, "nh": cfg["nh"], "temp": cfg["temp"], "lam": cfg["lam"]}
                 for c in chunks(games, cfg["chunk"])]
-        parts = list(pool.imap_unordered(_ppo, jobs))
+        parts = list(pool.imap(_ppo, jobs))                 # in job order: the same stream gives the same records
         res = [r for p in parts for r in p["results"]]
-        data = {k: np.concatenate([p[k] for p in parts]) for k in parts[0] if k != "results"}
+        data = {k: np.concatenate([p[k] for p in parts]) for k in parts[0] if k not in ("results", "cpu")}
         t_play = time.time() - ti
         sp = {"selfplay_vs_ga": float(np.mean([r["points"] for r in res if r["opp"] == "GA base"] or [float("nan")])),
               "selfplay_vs_bots": float(np.mean([r["points"] for r in res if r["opp"] in BOTS] or [float("nan")])),
@@ -386,22 +386,37 @@ def main():
               "selfplay_vs_rlv1": float(np.mean([r["points"] for r in res if r["opp"] == "rl-v1"] or [float("nan")])),
               "selfplay_vs_champion": float(np.mean([r["points"] for r in res if r["opp"] == "champion"] or [float("nan")])),
               "selfplay_vs_rlv2": float(np.mean([r["points"] for r in res if r["opp"] == "rl-v2"] or [float("nan")])),
+              "selfplay_vs_frozen_c2": float(np.mean([r["points"] for r in res if r["opp"] == "frozen c2"] or [float("nan")])),
+              "selfplay_vs_frozen_c1": float(np.mean([r["points"] for r in res if r["opp"] == "frozen c1"] or [float("nan")])),
               "school_games": sum(1 for r in res if r.get("school")),
               "school_points": float(np.mean([r["points"] for r in res if r.get("school")] or [float("nan")])),
               "drill_games": sum(1 for r in res if r.get("drill")),
               "drill_points": float(np.mean([r["points"] for r in res if r.get("drill")] or [float("nan")])),
               "decisions": int(len(data["A"])),
+              "games": len(res),
+              "rejected_error": sum(1 for r in res if r.get("error")),
+              "rejected_overflow": sum(1 for r in res if r.get("overflow")),
+              "capped_games": sum(1 for r in res if r.get("capped")),
+              "points_all": float(np.mean([r["points"] for r in res])),
+              "points_uncapped": float(np.mean([r["points"] for r in res if not r.get("capped")] or [float("nan")])),
               "value_mse_fresh": float(((data["V"] - data["Z"]) ** 2).mean()),
               "t_play": t_play}
         tt = time.time()
         net.train()
         cfg["ent_now"] = entropy_bonus(cfg, it)
-        m = ppo_update(net, opt, data, cfg, torch)
+        if sp["rejected_error"] or sp["rejected_overflow"]:
+            log.event("rejected", iter=it, errors=sp["rejected_error"], overflow=sp["rejected_overflow"])
+        m = ppo_update(net, opt, data, cfg, torch, seed=stream_seed(cfg, args.run, it))
         m["ent_coef"] = cfg["ent_now"]
         sp["t_train"] = time.time() - tt
         save(net, os.path.join(d, f"net_{it}.pt"))
         e = run_eval(pool, cfg, {"kind": "net", "path": snap(it)})
         sp["t_iter"] = time.time() - ti
+        totals["games"] += len(res)
+        totals["updates"] += m["updates"]
+        totals["cpu_s"] += sum(p["cpu"] for p in parts) + e["cpu"] + (time.process_time() - cpu0)
+        cpu0 = time.process_time()
+        sp.update(games_total=totals["games"], updates_total=totals["updates"], cpu_hours=totals["cpu_s"] / 3600)
         sp["stage"] = stage + 1
         log.row(make_row(it, t0, m, sp, e))
         print(f"iter {it}: {fmt(e)} | train vs GA {sp['selfplay_vs_ga']:.3f} kl {m['kl']:.4f} ent {m['entropy']:.3f} "
@@ -437,14 +452,127 @@ def main():
                 log.event("stage_start", stage=STAGES[stage]["name"], index=stage, iter=it + 1,
                           expect=STAGES[stage].get("expect", ""))
         torch.save({"net": net.state_dict(), "opt": opt.state_dict(), "iter": it, "snaps": snaps,
-                    "stage": stage, "stage_start": stage_start}, os.path.join(d, "ckpt.pt"))
-        if it % cfg["goal_every"] == 0:
+                    "stage": stage, "stage_start": stage_start, "totals": totals}, os.path.join(d, "ckpt.pt"))
+        if cfg["goal_every"] and it % cfg["goal_every"] == 0:
             import subprocess
             import sys
             subprocess.run([sys.executable, "experiments/goal_check.py", snap(it), "--name", f"{args.run}_iter{it}",
                             "--label", f"{args.run} iteration {it}", "--nh", str(cfg["nh"])]
                            + (["--vs_az"] if it % cfg["vs_az_every"] == 0 else []), check=False)
         it += 1
+
+
+def stream_seed(cfg, run, it):
+    """The training stream's integer seed at iteration it (minibatch shuffles): from cfg seed, else the run name."""
+    import zlib
+    return zlib.crc32(f"rl-v3 ppo {cfg['seed'] or run} {it}".encode())
+
+
+def load_exclusions(path):
+    """Kingdoms never trained on (sorted card names joined by commas), from a shared exclusion manifest."""
+    if not path:
+        return set()
+    return {",".join(sorted(k.split(","))) for k in json.load(open(path))["kingdoms"]}
+
+
+def parse_frozen(spec):
+    """"c2:0.1,c1:0.1" -> [("c2", 0.1), ("c1", 0.1)]"""
+    out = []
+    for part in filter(None, spec.split(",")):
+        name, share = part.split(":")
+        assert name in FROZEN, name
+        out.append((name, float(share)))
+    return out
+
+
+def make_games(cfg, stage, it, run, snaps, learner, excluded=frozenset()):
+    """One iteration's training games. The stream is seeded by cfg seed (or the run name, as c1 and c2 were), so two
+    runs with the same seed and settings play the same kingdoms, seeds, seats and opponents. Frozen opponents
+    (cfg frozen) take their shares first; the stage's league shares the rest. Excluded kingdoms are redrawn."""
+    from rl.core import kingdom_for_bot, random_kingdom
+    rng = random.Random(f"rl-v3 ppo {cfg['seed']} {it}" if cfg["seed"] else f"rl-v3 ppo {run} {it}")
+    shares = STAGES[stage]["shares"]
+    frozen = parse_frozen(cfg.get("frozen", ""))
+
+    def draw(fn, *a):
+        for _ in range(1000):
+            k = fn(rng, *a)
+            if ",".join(sorted(k)) not in excluded:
+                return k
+        raise RuntimeError("could not draw a kingdom outside the exclusions")
+
+    games = []
+    for i in range(cfg["games"]):
+        u, seat, opp = rng.random(), i % 2, None
+        if frozen:
+            f = rng.random()
+            for name, share in frozen:
+                if f < share:
+                    opp = {"kind": "net", "path": FROZEN[name], "tag": f"frozen {name}"}
+                    break
+                f -= share
+        if opp is None:
+            for kind, share in shares.items():
+                if u < share:
+                    opp = pick_opponent(kind, i, rng, snaps)
+                    break
+                u -= share
+        if opp is None or (opp["kind"] == "net" and opp["path"] is None):
+            opp = {"kind": "net", "path": learner, "tag": "self"}
+        force = opp_force = drill = None
+        if opp["kind"] == "bot":
+            k = draw(kingdom_for_bot, opp["name"])
+        elif rng.random() < cfg["drill_share"]:
+            drill = DRILL_CARDS(cfg)[i % len(DRILL_CARDS(cfg))]
+            k = draw(school_kingdom, drill)
+            u2 = rng.random()
+            if u2 < 0.3:
+                force = drill                                  # the learner plays it
+            elif u2 < 0.6 and opp["kind"] == "net":
+                opp_force = drill                              # the learner plays against it
+        elif rng.random() < STAGES[stage].get("school", 0):
+            force = SCHOOL[i % len(SCHOOL)]
+            k = draw(school_kingdom, force)
+        elif rng.random() < cfg["focus_share"]:
+            k = draw(focus_kingdom, cfg["focus_exclude"].split(","))
+        else:
+            k = draw(random_kingdom)
+        games.append({"kingdom": k, "seed": rng.getrandbits(32), "seat": seat, "opp": opp, "force": force,
+                      "opp_force": opp_force, "drill": drill})
+    return games
+
+
+def ratio_check(net, data, temp, torch):
+    """The first PPO ratio pi_torch(a) / pi_C(a) on records the C sampler just made with this net: 1 up to float
+    rounding when the update uses the sampler's temperature."""
+    with torch.no_grad():
+        logp_all, _ = policy_logp(net, torch.from_numpy(data["X"]), torch.from_numpy(data["LEGAL"]).bool(), temp, torch)
+        lp = logp_all.gather(1, torch.from_numpy(data["A"]).long()[:, None]).squeeze(1).numpy()
+    r = np.exp(lp - data["LOGP"])
+    return {"decisions": int(len(r)), "mean_abs_ratio_err": float(np.abs(r - 1).mean()),
+            "outside_clip": float((np.abs(r - 1) > 0.2).mean())}
+
+
+def init_check(net, src, snap0, cfg, pool, torch, games=24):
+    """Step-zero checks for a run started from a saved net: the exported weights equal the source's .npy (if any),
+    and a short sampled collection gives first PPO ratios of 1 (C sampling and torch agree, temperature included)."""
+    out = {}
+    npy = src.replace(".pt", ".npy")
+    if os.path.exists(npy):
+        out["weights_equal_source"] = bool(np.array_equal(np.load(npy), np.load(snap0)))
+        if not out["weights_equal_source"]:
+            raise SystemExit(f"init check: {snap0} differs from {npy}")
+    from rl.core import random_kingdom
+    rng = random.Random("rl-v3 init check")
+    gs = [{"kingdom": random_kingdom(rng), "seed": rng.getrandbits(32), "seat": i % 2, "opp": {"kind": "ga"}}
+          for i in range(games)]
+    parts = list(pool.imap(_ppo, [{"games": c, "learner": snap0, "nh": cfg["nh"], "temp": cfg["temp"],
+                                    "lam": cfg["lam"]} for c in chunks(gs, 4)]))
+    data = {k: np.concatenate([p[k] for p in parts]) for k in ("X", "LEGAL", "A", "LOGP")}
+    out.update(ratio_check(net, data, cfg["temp"], torch))
+    if out["mean_abs_ratio_err"] > 1e-4:
+        raise SystemExit(f"init check: first PPO ratios are off ({out})")
+    return out
 
 
 def write_curriculum(d):
@@ -542,16 +670,17 @@ def pick_opponent(kind, i, rng, snaps):
 
 def make_row(it, t0, m, sp, e):
     row = {"iter": it, "hours": round((time.time() - t0) / 3600, 4)}
-    for k in ("pg_loss", "value_loss", "entropy", "kl", "clipfrac", "epochs_done", "ent_coef"):
+    for k in ("pg_loss", "value_loss", "entropy", "kl", "clipfrac", "epochs_done", "ent_coef", "updates"):
         row[k] = round(m[k], 5) if k in m else ""
-    for tag in ["GA base", "champion"] + BOTS + ["bots"]:
+    for tag in ["GA base", "champion"] + BOTS + ["bots"] + [t for t in e if t.startswith("vs ")]:
         row[f"eval_{tag.replace(' ', '_').replace('-', '_')}"] = round(e[tag], 4)
     row["eval_turns"] = round(e["turns"], 2)
     row["eval_capped"] = round(e["capped"], 4)
     row["stage"] = sp.get("stage", 1)
     for k in ("selfplay_vs_ga", "selfplay_vs_bots", "selfplay_vs_past", "selfplay_vs_aznet", "selfplay_vs_azsearch",
-              "selfplay_vs_rlv1", "selfplay_vs_champion", "selfplay_vs_rlv2", "school_games", "school_points", "drill_games", "drill_points", "decisions",
-              "value_mse_fresh",
+              "selfplay_vs_rlv1", "selfplay_vs_champion", "selfplay_vs_rlv2", "selfplay_vs_frozen_c2", "selfplay_vs_frozen_c1", "school_games", "school_points", "drill_games", "drill_points", "decisions",
+              "value_mse_fresh", "games", "rejected_error", "rejected_overflow", "capped_games", "points_all",
+              "points_uncapped", "games_total", "updates_total", "cpu_hours",
               "t_play", "t_train", "t_iter"):
         row[k] = (round(sp[k], 4) if isinstance(sp[k], float) and not math.isnan(sp[k]) else sp[k]) if k in sp else ""
     return row
