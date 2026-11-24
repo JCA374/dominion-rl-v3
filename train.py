@@ -376,7 +376,8 @@ def main():
                 for c in chunks(games, cfg["chunk"])]
         parts = list(pool.imap(_ppo, jobs))                 # in job order: the same stream gives the same records
         res = [r for p in parts for r in p["results"]]
-        data = {k: np.concatenate([p[k] for p in parts]) for k in parts[0] if k not in ("results", "cpu")}
+        cpu_play = sum(p["cpu"] for p in parts)
+        data = concat_free(parts, [k for k in parts[0] if k not in ("results", "cpu")])
         t_play = time.time() - ti
         sp = {"selfplay_vs_ga": float(np.mean([r["points"] for r in res if r["opp"] == "GA base"] or [float("nan")])),
               "selfplay_vs_bots": float(np.mean([r["points"] for r in res if r["opp"] in BOTS] or [float("nan")])),
@@ -409,12 +410,13 @@ def main():
         m = ppo_update(net, opt, data, cfg, torch, seed=stream_seed(cfg, args.run, it))
         m["ent_coef"] = cfg["ent_now"]
         sp["t_train"] = time.time() - tt
+        del data                                          # free the records before the evaluation games
         save(net, os.path.join(d, f"net_{it}.pt"))
         e = run_eval(pool, cfg, {"kind": "net", "path": snap(it)})
         sp["t_iter"] = time.time() - ti
         totals["games"] += len(res)
         totals["updates"] += m["updates"]
-        totals["cpu_s"] += sum(p["cpu"] for p in parts) + e["cpu"] + (time.process_time() - cpu0)
+        totals["cpu_s"] += cpu_play + e["cpu"] + (time.process_time() - cpu0)
         cpu0 = time.process_time()
         sp.update(games_total=totals["games"], updates_total=totals["updates"], cpu_hours=totals["cpu_s"] / 3600)
         sp["stage"] = stage + 1
@@ -460,6 +462,24 @@ def main():
                             "--label", f"{args.run} iteration {it}", "--nh", str(cfg["nh"])]
                            + (["--vs_az"] if it % cfg["vs_az_every"] == 0 else []), check=False)
         it += 1
+
+
+def concat_free(parts, keys):
+    """np.concatenate of each key over the parts, releasing each part's array once it is copied: the peak is about one
+    copy of the iteration's records (the features dominate: ~0.8 GB at 3,000 games), not two. Same result."""
+    out = {}
+    for k in keys:
+        n = sum(len(p[k]) for p in parts)
+        first = next(p[k] for p in parts)
+        buf = np.empty((n,) + first.shape[1:], first.dtype)
+        o = 0
+        for p in parts:
+            m = len(p[k])
+            buf[o:o + m] = p[k]
+            o += m
+            p[k] = None
+        out[k] = buf
+    return out
 
 
 def stream_seed(cfg, run, it):

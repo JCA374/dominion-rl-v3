@@ -54,6 +54,14 @@ def _c2_net():
     return net
 
 
+def test_concat_free_equals_concatenate():
+    rng = np.random.default_rng(0)
+    parts = [{"X": rng.normal(size=(n, 3)).astype(np.float32), "A": np.arange(n)} for n in (4, 0, 7)]
+    want = {k: np.concatenate([p[k] for p in parts]) for k in ("X", "A")}
+    got = train.concat_free(parts, ["X", "A"])
+    assert all(np.array_equal(want[k], got[k]) and want[k].dtype == got[k].dtype for k in want)
+
+
 def test_net_from_npy_is_exact():
     from rl.net import from_flat
     flat = np.load(C2)
