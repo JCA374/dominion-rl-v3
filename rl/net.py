@@ -41,7 +41,24 @@ class Net(nn.Module):
         return out
 
 
+def from_flat(flat: np.ndarray) -> Net:
+    """A net from its flat c/rl.c export (the inverse of Net.flat): the weights a .npy model file holds."""
+    from .core import net_shape
+    nh, nf = net_shape(flat)
+    n = Net(nh, nf)
+    t = torch.from_numpy(np.ascontiguousarray(flat, np.float32))
+    o = 0
+    for p in [n.l1.weight, n.l1.bias, n.l2.weight, n.l2.bias, n.pi.weight, n.pi.bias, n.v.weight, n.v.bias]:
+        p.data.copy_(t[o:o + p.numel()].reshape(p.shape))
+        o += p.numel()
+    assert o == flat.size
+    return n
+
+
 def load(path: str) -> Net:
+    """A net from a .pt (save) or a .npy model file (from_flat)."""
+    if path.endswith(".npy"):
+        return from_flat(np.load(path))
     d = torch.load(path, weights_only=True)
     n = Net(d["nh"], d.get("nf", NF0))          # nets saved before the helper inputs read NF0
     n.load_state_dict(d["state"])

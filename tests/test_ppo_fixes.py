@@ -54,6 +54,12 @@ def _c2_net():
     return net
 
 
+def test_net_from_npy_is_exact():
+    from rl.net import from_flat
+    flat = np.load(C2)
+    assert np.array_equal(from_flat(flat).flat(), flat)
+
+
 def test_first_ratio_matches_sampler_temperature():
     net = _c2_net()
     for temp in (0.7, 1.0):

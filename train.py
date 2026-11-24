@@ -557,7 +557,7 @@ def init_check(net, src, snap0, cfg, pool, torch, games=24):
     """Step-zero checks for a run started from a saved net: the exported weights equal the source's .npy (if any),
     and a short sampled collection gives first PPO ratios of 1 (C sampling and torch agree, temperature included)."""
     out = {}
-    npy = src.replace(".pt", ".npy")
+    npy = src if src.endswith(".npy") else src.replace(".pt", ".npy")
     if os.path.exists(npy):
         out["weights_equal_source"] = bool(np.array_equal(np.load(npy), np.load(snap0)))
         if not out["weights_equal_source"]:
