@@ -127,7 +127,7 @@ def eval_chunk(job: dict) -> list[dict]:
         me = _seat(job["agent"], k)
         other = _seat(gm["opp"], k)
         seats = [me, other] if seat == 0 else [other, me]
-        r = play(seats, k, gm["seed"], rng_seed=gm["seed"] ^ 0x5EED, nh=job["nh"])
+        r = play(seats, k, gm["seed"], rng_seed=gm["seed"] ^ 0x5EED, nh=job["nh"], max_rec=1)   # no seat records
         out.append({"opp": gm["opp"].get("tag", gm["opp"]["kind"]), "points": (outcome(r, seat) + 1) / 2,
                     "margin": r["scores"][seat] - r["scores"][1 - seat], "turns": max(r["turns"]),
                     "capped": r["capped"], "error": r["error"]})
