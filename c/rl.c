@@ -40,22 +40,28 @@ static double choose(int n, int k) {
 #define HK 16                                 /* most cards drawn */
 #define HS (3 * HK + 1)                       /* coin sums 0..48 */
 static void draw_dist(const int *cnt, int k, double *P) {
+    /* Only the reachable cells: after j cards the sum is at most 3j, so rows 0..k and sums below S = 3k + 1; every
+     * other cell is 0 and was skipped anyway. The same additions in the same order (j, s, t) and the same binomials
+     * (precomputed once per coin value) as the full-table version: identical doubles, ~5x less work. */
     if (k > HK - 1) k = HK - 1;
     int nv[4] = {0}, n = 0;
     for (int c = 0; c < DE_NUM_CARDS; c++) { nv[DE_CARDS[c].coins] += cnt[c]; n += cnt[c]; }
-    double f[HK][HS] = {{0}};
+    const int S = 3 * k + 1;
+    double f[HK][HS], g[HK][HS], C[HK];
+    for (int j = 0; j <= k; j++) for (int s = 0; s < S; s++) f[j][s] = 0;
     f[0][0] = 1;
     for (int v = 0; v < 4; v++) {
-        double g[HK][HS] = {{0}};
+        for (int t = 0; t <= k; t++) C[t] = choose(nv[v], t);
+        for (int j = 0; j <= k; j++) for (int s = 0; s < S; s++) g[j][s] = 0;
         for (int j = 0; j <= k; j++)
-            for (int s = 0; s < HS; s++) {
+            for (int s = 0; s < S; s++) {
                 if (f[j][s] == 0) continue;
-                for (int t = 0; t <= nv[v] && j + t <= k; t++) g[j + t][s + v * t] += f[j][s] * choose(nv[v], t);
+                for (int t = 0; t <= nv[v] && j + t <= k; t++) g[j + t][s + v * t] += f[j][s] * C[t];
             }
-        memcpy(f, g, sizeof f);
+        for (int j = 0; j <= k; j++) for (int s = 0; s < S; s++) f[j][s] = g[j][s];
     }
     double tot = choose(n, k);
-    for (int s = 0; s < HS; s++) P[s] = tot > 0 ? f[k][s] / tot : (s == 0);
+    for (int s = 0; s < HS; s++) P[s] = tot > 0 ? (s < S ? f[k][s] : 0) / tot : (s == 0);
 }
 
 static void rl_helpers(const de_game *g, int me, float *h) {
@@ -77,7 +83,8 @@ static void rl_helpers(const de_game *g, int me, float *h) {
     double Pa[HS], Pb[HS], P[HS] = {0};
     draw_dist(deck, a, Pa);
     draw_dist(pool, b, Pb);
-    for (int i = 0; i < HS; i++) for (int j = 0; i + j < HS; j++) P[i + j] += Pa[i] * Pb[j];
+    for (int i = 0; i <= 3 * a && i < HS; i++)    /* Pa is 0 past 3a, Pb past 3b: the skipped terms added +0 */
+        for (int j = 0; j <= 3 * b && i + j < HS; j++) P[i + j] += Pa[i] * Pb[j];
     double ec = 0, p3 = 0, p5 = 0, p6 = 0, p8 = 0, evp = 0;
     int prov = g->supply[DE_PROVINCE] > 0, duchy = g->supply[DE_DUCHY] > 0, est = g->supply[DE_ESTATE] > 0;
     for (int s = 0; s < HS; s++) {
